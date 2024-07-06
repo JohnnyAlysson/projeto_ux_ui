@@ -89,9 +89,11 @@ function updateProductMenu() {
       productElement.innerHTML = `
           <h3>${product.name}</h3>
           <p>${formatarParaReal(product.price)}</p>
-          <button onclick="addToCart(products[${index}])">Adicionar ao Carrinho</button>
-          <button onclick="editProduct(${index})">Editar</button>
-          <button onclick="deleteProduct(${index})">Excluir</button>
+          <button onclick="addToCart(products[${index}])">Adicionar <i class="fa-solid fa-cart-plus"></i></button>
+          <div class ="product-edit-remove">
+          <button onclick="editProduct(${index})"><i class="fa-solid fa-pen-to-square"></i></button>
+          <button onclick="deleteProduct(${index})"><i class="fa-solid fa-trash-can"></i></button>
+          </div>
       `;
       productGrid.appendChild(productElement);
   });

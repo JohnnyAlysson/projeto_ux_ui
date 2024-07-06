@@ -97,9 +97,17 @@ button:hover {
   flex-direction: column;
   gap: 0.5rem;
 }
+.product-edit-remove{
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  gap:20px;
+  
+}
 
 #cart-menu {
   position: fixed;
+  gap: 0.2rem;
   top: 2rem;
   right: 2rem;
   background-color: var(--menu-background);
@@ -135,4 +143,8 @@ button:hover {
 
 #cash-payment.hidden {
   display: none;
+}
+
+li{
+  margin-bottom: 1rem;
 }
