@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema PDV</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div id="app">
+        <header>
+            <h1>Sistema PDV</h1>
+            <div id="cart-icon">
+                🛒 <span id="cart-badge">0</span>
+            </div>
+        </header>
+        
+        <main>
+            <section id="add-product">
+                <h2>Adicionar Produto</h2>
+                <form id="add-product-form">
+                    <input type="text" id="product-name" placeholder="Nome do Produto" required>
+                    <input type="number" id="product-price" placeholder="Preço" step="0.01" required>
+                    <button type="submit">Adicionar</button>
+                </form>
+            </section>
+
+            <section id="product-menu">
+                <h2>Menu de Produtos</h2>
+                <div id="product-grid"></div>
+            </section>
+        </main>
+
+        <div id="cart-menu" class="hidden">
+            <h2>Carrinho</h2>
+            <ul id="cart-items"></ul>
+            <div id="cart-total">Total: R$ <span id="total-amount">0.00</span></div>
+            <div id="payment-section">
+                <select id="payment-method">
+                    <option value="credit">Crédito</option>
+                    <option value="debit">Débito</option>
+                    <option value="pix">PIX</option>
+                    <option value="cash">Dinheiro</option>
+                </select>
+                <div id="cash-payment" class="hidden">
+                    <input type="number" id="cash-amount" placeholder="Valor em dinheiro" step="0.01">
+                    <button id="calculate-change">Calcular Troco</button>
+                </div>
+                <button id="process-payment">Finalizar Compra</button>
+            </div>
+        </div>
+        <footer class=""></footer>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>
