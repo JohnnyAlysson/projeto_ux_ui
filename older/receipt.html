@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Recibo</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+</head>
+<body>
+    <header>
+        <h1>Recibo</h1>
+    </header>
+    <main>
+        <section id="receipt-details">
+            <h2>Seu Pedido</h2>
+            <ul id="receipt-items"></ul>
+            <div id="receipt-total">Total: R$0,00</div>
+            <p id="receipt-date"></p>
+            <p id="receipt-payment-method"></p>
+            <p id="receipt-change"></p>
+        </section>
+    </main>
+    <button onclick="window.print()"><i class="fas fa-print"></i> Imprimir Recibo</button>
+    <script src="receipt.js"></script>
+</body>
+</html>

@@ -1,211 +1,324 @@
-// Variáveis globais
-let products = [];
-let cart = [];
-let currentCategory = 'todos';
-
-// Elementos do DOM
-const productGrid = document.getElementById('product-grid');
-const cartIcon = document.getElementById('cart-icon');
-const cartBadge = document.getElementById('cart-badge');
-const cartMenu = document.getElementById('cart-menu');
-const cartItems = document.getElementById('cart-items');
-const totalAmount = document.getElementById('total-amount');
-const addProductForm = document.getElementById('add-product-form');
-const paymentMethod = document.getElementById('payment-method');
-const cashPayment = document.getElementById('cash-payment');
-const cashAmount = document.getElementById('cash-amount');
-const calculateChange = document.getElementById('calculate-change');
-const processPayment = document.getElementById('process-payment');
-const categoryButtons = document.querySelectorAll('.category-btn');
-
-// Funções auxiliares
-function editProduct(index) {
-  const newName = prompt('Novo nome do produto:', products[index].name);
-  const newPrice = prompt('Novo preço do produto:', formatarParaReal(products[index].price).replace('R$', '').trim());
+document.addEventListener('DOMContentLoaded', () => {
+    const produtos = [
+      { id: 1, nome: 'Café Expresso', preco: 3.5, descricao: 'Café puro e forte', imagem: '/api/placeholder/300/200', categoria: 'Bebidas' },
+      { id: 2, nome: 'Cappuccino', preco: 4.5, descricao: 'Café com leite e espuma', imagem: '/api/placeholder/300/200', categoria: 'Bebidas' },
+      { id: 3, nome: 'Bolo de Chocolate', preco: 5.0, descricao: 'Bolo caseiro de chocolate', imagem: '/api/placeholder/300/200', categoria: 'Doces' },
+      { id: 4, nome: 'Sanduíche Natural', preco: 6.5, descricao: 'Sanduíche leve e saudável', imagem: '/api/placeholder/300/200', categoria: 'Lanches' },
+      { id: 5, nome: 'Suco de Laranja', preco: 4.0, descricao: 'Suco natural da fruta', imagem: '/api/placeholder/300/200', categoria: 'Bebidas' },
+      { id: 6, nome: 'Croissant', preco: 3.0, descricao: 'Croissant francês tradicional', imagem: '/api/placeholder/300/200', categoria: 'Lanches' },
+      { id: 7, nome: 'Chá Verde', preco: 3.0, descricao: 'Chá verde refrescante', imagem: '/api/placeholder/300/200', categoria: 'Bebidas' },
+      { id: 8, nome: 'Muffin de Blueberry', preco: 4.0, descricao: 'Muffin recheado com blueberry', imagem: '/api/placeholder/300/200', categoria: 'Doces' },
+      { id: 9, nome: 'Smoothie de Frutas', preco: 5.5, descricao: 'Smoothie de frutas variadas', imagem: '/api/placeholder/300/200', categoria: 'Bebidas' },
+      { id: 10, nome: 'Torta de Limão', preco: 4.5, descricao: 'Torta de limão cremosa', imagem: '/api/placeholder/300/200', categoria: 'Doces' },
+      { id: 11, nome: 'Café Gelado', preco: 4.0, descricao: 'Café gelado refrescante', imagem: '/api/placeholder/300/200', categoria: 'Bebidas' },
+      { id: 12, nome: 'Brownie', preco: 3.5, descricao: 'Brownie de chocolate', imagem: '/api/placeholder/300/200', categoria: 'Doces' }
+    ];
   
-  if (newName && newPrice) {
-      products[index].name = newName;
-      products[index].price = parseFloat(newPrice.replace(',', '.'));
-      updateProductMenu();
-  }
-}
-
-function deleteProduct(index) {
-    if (confirm('Tem certeza que deseja excluir este produto?')) {
-        products.splice(index, 1);
-        updateProductMenu();
-    }
-}
-
-function formatarParaReal(valor) {
-    return valor.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
-}
-
-function saveToLocalStorage(key, data) {
-    localStorage.setItem(key, JSON.stringify(data));
-}
-
-function loadFromLocalStorage(key) {
-    const data = localStorage.getItem(key);
-    return data ? JSON.parse(data) : null;
-}
-
-function updateCartBadge() {
-    cartBadge.textContent = cart.reduce((total, item) => total + item.quantity, 0);
-}
-
-function updateCartDisplay() {
-    cartItems.innerHTML = '';
-    let total = 0;
-
-    cart.forEach((item, index) => {
-        const li = document.createElement('li');
-        li.innerHTML = `
-            <span>${item.name} - ${formatarParaReal(item.price)} x ${item.quantity}</span>
-            <button onclick="removeFromCart(${index})">Remover</button>
-        `;
-        cartItems.appendChild(li);
-        
-        total += item.price * item.quantity;
+    let mesas = {};
+    let mesaAtual = null;
+  
+    const mesaInput = document.getElementById('mesaInput');
+    const abrirMesaBtn = document.getElementById('abrirMesaBtn');
+    const tabsList = document.getElementById('tabsList');
+    const tabsContent = document.getElementById('tabsContent');
+    const modal = document.getElementById('modal');
+    const closeModal = document.getElementById('closeModal');
+    const modalPagamento = document.getElementById('modalPagamento');
+    const closeModalPagamento = document.getElementById('closeModalPagamento');
+    const modalPagamentoParcial = document.getElementById('modalPagamentoParcial');
+    const closeModalPagamentoParcial = document.getElementById('closeModalPagamentoParcial');
+    const produtosContainer = document.getElementById('produtosContainer');
+    const categoriaSelect = document.getElementById('categoriaSelect');
+    const formPagamento = document.getElementById('formPagamento');
+    const formPagamentoParcial = document.getElementById('formPagamentoParcial');
+    const resumoPagamentoParcial = document.getElementById('resumoPagamentoParcial');
+  
+    abrirMesaBtn.addEventListener('click', () => {
+      const numeroMesa = parseInt(mesaInput.value, 10);
+      if (!isNaN(numeroMesa) && numeroMesa > 0 && numeroMesa <= 99) {
+        abrirMesa(numeroMesa);
+      } else {
+        alert("Por favor, insira um número de mesa válido (1-99).");
+      }
     });
-
-    totalAmount.textContent = formatarParaReal(total).replace('R$', '').trim();
-    updateCartBadge();
-    saveToLocalStorage('cart', cart);
-}
-
-function addToCart(product) {
-    const existingItem = cart.find(item => item.name === product.name);
-    
-    if (existingItem) {
-        existingItem.quantity++;
-    } else {
-        cart.push({ ...product, quantity: 1 });
+  
+    closeModal.addEventListener('click', () => fecharModal());
+    closeModalPagamento.addEventListener('click', () => fecharModalPagamento());
+    closeModalPagamentoParcial.addEventListener('click', () => fecharModalPagamentoParcial());
+  
+    window.onclick = function(event) {
+      if (event.target === modal) {
+        fecharModal();
+      }
+      if (event.target === modalPagamento) {
+        fecharModalPagamento();
+      }
+      if (event.target === modalPagamentoParcial) {
+        fecharModalPagamentoParcial();
+      }
     }
-    
-    updateCartDisplay();
-}
-
-function removeFromCart(index) {
-    if (cart[index].quantity > 1) {
-        cart[index].quantity--;
-    } else {
-        cart.splice(index, 1);
-    }
-    
-    updateCartDisplay();
-}
-
-function updateProductMenu() {
-    productGrid.innerHTML = '';
-    
-    products.filter(product => currentCategory === 'todos' || product.category === currentCategory).forEach((product, index) => {
-        const productElement = document.createElement('div');
-        productElement.className = 'product-item';
-        productElement.innerHTML = `
-            <img src="${product.image || 'placeholder.jpg'}" alt="${product.name}">
-            <h3>${product.name}</h3>
-            <p>${formatarParaReal(product.price)}</p>
-            <button onclick="addToCart(products[${index}])">Adicionar <i class="fas fa-cart-plus"></i></button>
-            <div class ="product-edit-remove">
-            <button onclick="editProduct(${index})"><i class="fa-solid fa-pen-to-square"></i></button>
-            <button onclick="deleteProduct(${index})"><i class="fa-solid fa-trash-can"></i></button>
-            </div>
-        `;
-        productGrid.appendChild(productElement);
+  
+    categoriaSelect.addEventListener('change', () => {
+      const categoria = categoriaSelect.value;
+      renderProdutos(categoria);
     });
-    
-    saveToLocalStorage('products', products);
-}
-
-function addProduct(name, price, category) {
-    const newProduct = {
-        id: generateId(),
-        name,
-        price: parseFloat(price.replace(',', '.')),
-        category
-    };
-    products.push(newProduct);
-    updateProductMenu();
-}
-
-function generateId() {
-    return Math.random().toString(36).substr(2, 9);
-}
-
-function calculateChangeAmount() {
-    const total = parseFloat(totalAmount.textContent.replace(',', '.'));
-    const paid = parseFloat(cashAmount.value.replace(',', '.'));
-    
-    if (paid >= total) {
-        const change = paid - total;
-        alert(`Troco: ${formatarParaReal(change)}`);
-    } else {
-        alert('Valor insuficiente!');
+  
+    formPagamento.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const metodoPagamento = document.getElementById('metodoPagamento').value;
+      const observacoes = document.getElementById('observacoes').value;
+      const incluirServico = document.getElementById('incluirServico').checked;
+      finalizarPedido(mesaAtual, metodoPagamento, observacoes, incluirServico);
+    });
+  
+    formPagamentoParcial.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const valorPagamentoParcial = parseFloat(document.getElementById('valorPagamentoParcial').value);
+      if (!isNaN(valorPagamentoParcial) && valorPagamentoParcial > 0) {
+        abaterValorParcial(mesaAtual, valorPagamentoParcial);
+      } else {
+        alert("Por favor, insira um valor válido para o pagamento parcial.");
+      }
+    });
+  
+    function abrirMesa(numeroMesa) {
+      if (!mesas[numeroMesa]) {
+        mesas[numeroMesa] = { carrinho: [], totalAbatido: 0, pagamentosParciais: [] };
+      }
+      mesaAtual = numeroMesa;
+      renderTabs();
     }
-}
-
-function processPaymentTransaction() {
-    const total = parseFloat(totalAmount.textContent.replace(',', '.'));
-    const method = paymentMethod.value;
-    
-    if (method === 'cash') {
-        const paid = parseFloat(cashAmount.value.replace(',', '.'));
-        if (paid < total) {
-            alert('Valor insuficiente!');
-            return;
+  
+    function fecharMesa(numeroMesa) {
+      abrirModalPagamento(numeroMesa);
+    }
+  
+    function abrirModalPagamentoParcial(numeroMesa) {
+      mesaAtual = numeroMesa;
+      renderResumoPagamentoParcial();
+      modalPagamentoParcial.style.display = 'flex';
+    }
+  
+    function adicionarAoCarrinho(produto, quantidade, numeroMesa) {
+      const mesa = mesas[numeroMesa];
+      const itemExistente = mesa.carrinho.find(item => item.id === produto.id);
+      if (itemExistente) {
+        itemExistente.quantidade += quantidade;
+      } else {
+        mesa.carrinho.push({ ...produto, quantidade: quantidade });
+      }
+      renderTabs();
+    }
+  
+    function calcularTotal(carrinho) {
+      return carrinho.reduce((total, item) => total + item.preco * item.quantidade, 0).toFixed(2);
+    }
+  
+    function renderTabs() {
+      tabsList.innerHTML = '';
+      tabsContent.innerHTML = '';
+  
+      if (Object.keys(mesas).length === 0) {
+        tabsContent.innerHTML = '<p>Nenhuma mesa aberta. Abra uma mesa para começar.</p>';
+        return;
+      }
+  
+      Object.keys(mesas).forEach(numeroMesa => {
+        const tabButton = document.createElement('button');
+        tabButton.textContent = `Mesa ${numeroMesa}`;
+        tabButton.className = mesaAtual === numeroMesa ? 'active' : '';
+        tabButton.addEventListener('click', () => {
+          mesaAtual = numeroMesa;
+          renderTabs();
+        });
+        tabsList.appendChild(tabButton);
+  
+        if (mesaAtual === numeroMesa) {
+          const mesa = mesas[numeroMesa];
+          const card = document.createElement('div');
+          card.className = 'card';
+  
+          const cardHeader = document.createElement('div');
+          cardHeader.className = 'card-content';
+          cardHeader.innerHTML = `<h3>Carrinho - Mesa ${numeroMesa}</h3>`;
+          card.appendChild(cardHeader);
+  
+          const table = document.createElement('table');
+          table.innerHTML = `
+            <thead>
+              <tr>
+                <th class="text-left">Item</th>
+                <th class="text-right">Qtd</th>
+                <th class="text-right">Preço</th>
+                <th class="text-right">Subtotal</th>
+              </tr>
+            </thead>
+          `;
+          const tbody = document.createElement('tbody');
+          mesa.carrinho.forEach(item => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+              <td>${item.nome}</td>
+              <td class="text-right">${item.quantidade}</td>
+              <td class="text-right">R$ ${item.preco.toFixed(2)}</td>
+              <td class="text-right">R$ ${(item.preco * item.quantidade).toFixed(2)}</td>
+            `;
+            tbody.appendChild(tr);
+          });
+          table.appendChild(tbody);
+          card.appendChild(table);
+  
+          const totalDiv = document.createElement('div');
+          totalDiv.className = 'font-bold mt-4 text-right';
+          totalDiv.innerHTML = `
+            Total: R$ ${calcularTotal(mesa.carrinho)}<br>
+            Total Abatido: R$ ${mesa.totalAbatido.toFixed(2)}<br>
+            Pendente: R$ ${(calcularTotal(mesa.carrinho) - mesa.totalAbatido).toFixed(2)}
+          `;
+          card.appendChild(totalDiv);
+  
+          const verCatalogoBtn = document.createElement('button');
+          verCatalogoBtn.textContent = 'Ver Catálogo de Produtos';
+          verCatalogoBtn.className = 'w-full mb-4';
+          verCatalogoBtn.addEventListener('click', () => abrirModal(mesaAtual));
+          card.appendChild(verCatalogoBtn);
+  
+          const fecharMesaBtn = document.createElement('button');
+          fecharMesaBtn.textContent = `Fechar Mesa ${numeroMesa}`;
+          fecharMesaBtn.className = 'close-mesa-btn mt-4';
+          fecharMesaBtn.addEventListener('click', () => fecharMesa(mesaAtual));
+          card.appendChild(fecharMesaBtn);
+  
+          const pagamentoParcialBtn = document.createElement('button');
+          pagamentoParcialBtn.textContent = 'Pagamento Parcial';
+          pagamentoParcialBtn.className = 'pagamento-parcial-btn mt-4';
+          pagamentoParcialBtn.addEventListener('click', () => abrirModalPagamentoParcial(mesaAtual));
+          card.appendChild(pagamentoParcialBtn);
+  
+          tabsContent.appendChild(card);
         }
+      });
     }
-    
-    alert(`Pagamento de ${formatarParaReal(total)} processado com sucesso via ${method}!`);
-    cart = [];
-    updateCartDisplay();
-    cartMenu.classList.add('hidden');
-}
-
-// Event Listeners
-cartIcon.addEventListener('click', () => {
-  cartMenu.classList.toggle('hidden');
-  console.log('Cart clicked, visibility:', !cartMenu.classList.contains('hidden')); // Para depuração
-});
-
-
-addProductForm.addEventListener('submit', (event) => {
-    event.preventDefault();
-    const name = document.getElementById('product-name').value;
-    const price = document.getElementById('product-price').value;
-    const category = document.getElementById('product-category').value;
-    addProduct(name, price, category);
-    addProductForm.reset();
-});
-
-paymentMethod.addEventListener('change', () => {
-    cashPayment.classList.toggle('hidden', paymentMethod.value !== 'cash');
-});
-
-calculateChange.addEventListener('click', calculateChangeAmount);
-processPayment.addEventListener('click', processPaymentTransaction);
-
-categoryButtons.forEach(button => {
-    button.addEventListener('click', () => {
-        categoryButtons.forEach(btn => btn.classList.remove('active'));
-        button.classList.add('active');
-        currentCategory = button.dataset.category;
-        updateProductMenu();
-    });
-});
-
-// Inicialização
-window.onload = () => {
-    const savedProducts = loadFromLocalStorage('products');
-    if (savedProducts) {
-        products = savedProducts;
-        updateProductMenu();
+  
+    function abrirModal(numeroMesa) {
+      renderProdutos();
+      modal.style.display = 'flex';
     }
-    
-    const savedCart = loadFromLocalStorage('cart');
-    if (savedCart) {
-        cart = savedCart;
-        updateCartDisplay();
+  
+    function fecharModal() {
+      modal.style.display = 'none';
     }
-};
+  
+    function abrirModalPagamento(numeroMesa) {
+      mesaAtual = numeroMesa;
+      modalPagamento.style.display = 'flex';
+    }
+  
+    function fecharModalPagamento() {
+      modalPagamento.style.display = 'none';
+    }
+  
+    function fecharModalPagamentoParcial() {
+      modalPagamentoParcial.style.display = 'none';
+    }
+  
+    function renderProdutos(categoria = 'Todas') {
+      produtosContainer.innerHTML = '';
+  
+      const produtosFiltrados = categoria === 'Todas' ? produtos : produtos.filter(produto => produto.categoria === categoria);
+  
+      produtosFiltrados.forEach(produto => {
+        const card = document.createElement('div');
+        card.className = 'card';
+  
+        const img = document.createElement('img');
+        img.src = produto.imagem;
+        img.alt = produto.nome;
+        card.appendChild(img);
+  
+        const cardContent = document.createElement('div');
+        cardContent.className = 'card-content';
+        cardContent.innerHTML = `
+          <h3>${produto.nome}</h3>
+          <p>${produto.descricao}</p>
+          <p class="font-bold">R$ ${produto.preco.toFixed(2)}</p>
+        `;
+  
+        const quantidadeInput = document.createElement('input');
+        quantidadeInput.type = 'number';
+        quantidadeInput.value = 1;
+        quantidadeInput.min = 1;
+        quantidadeInput.className = 'quantidade-input';
+  
+        const addButton = document.createElement('button');
+        addButton.textContent = 'Adicionar ao Carrinho';
+        addButton.addEventListener('click', () => {
+          const quantidade = parseInt(quantidadeInput.value);
+          if (!isNaN(quantidade) && quantidade > 0) {
+            adicionarAoCarrinho(produto, quantidade, mesaAtual);
+          }
+        });
+        cardContent.appendChild(quantidadeInput);
+        cardContent.appendChild(addButton);
+  
+        card.appendChild(cardContent);
+        produtosContainer.appendChild(card);
+      });
+    }
+  
+    function abaterValorParcial(numeroMesa, valor) {
+      const mesa = mesas[numeroMesa];
+      mesa.pagamentosParciais.push(valor);
+      mesa.totalAbatido = (mesa.totalAbatido || 0) + valor;
+      renderTabs();
+      renderResumoPagamentoParcial();
+      fecharModalPagamentoParcial();
+    }
+  
+    function renderResumoPagamentoParcial() {
+      const mesa = mesas[mesaAtual];
+      const totalInicial = calcularTotal(mesa.carrinho);
+      const totalAbatido = mesa.totalAbatido.toFixed(2);
+      const totalRestante = (totalInicial - mesa.totalAbatido).toFixed(2);
+      const pagamentosDetalhes = mesa.pagamentosParciais.map((valor, index) => `Pagamento ${index + 1}: R$ ${valor.toFixed(2)}`).join('<br>');
+  
+      resumoPagamentoParcial.innerHTML = `
+        <h3>Resumo do Pagamento Parcial</h3>
+        <p>Total Inicial: R$ ${totalInicial}</p>
+        <p>${pagamentosDetalhes}</p>
+        <p>Total Abatido: R$ ${totalAbatido}</p>
+        <p>Total Pendente: R$ ${totalRestante}</p>
+      `;
+    }
+  
+    function finalizarPedido(numeroMesa, metodoPagamento, observacoes, incluirServico) {
+      const mesa = mesas[numeroMesa];
+      let total = parseFloat(calcularTotal(mesa.carrinho));
+      let servico = 0;
+      if (incluirServico) {
+        servico = total * 0.10;
+        total += servico;
+      }
+      const totalPendente = total - mesa.totalAbatido;
+      const dadosRecibo = {
+        numeroMesa,
+        metodoPagamento,
+        observacoes,
+        carrinho: mesa.carrinho,
+        total,
+        servico,
+        totalPendente,
+        pagamentosParciais: mesa.pagamentosParciais,
+        totalAbatido: mesa.totalAbatido
+      };
+      localStorage.setItem('recibo', JSON.stringify(dadosRecibo));
+      window.open('recibo.html', '_blank');
+      fecharModalPagamento();
+      delete mesas[numeroMesa];
+      mesaAtual = null;
+      renderTabs();
+    }
+  
+    renderTabs();
+  });
+  

@@ -1,193 +1,297 @@
 :root {
-  --primary-color: #003366;
-  --secondary-color: #ff6600;
-  --text-color: #ffffff;
-  --background-color: #f0f0f0;
-  --menu-background: #ffffff;
-  --item-background: #e6e6e6;
+  --font-size: 1rem;
+  --padding: 1rem;
+  --modal-width: 90vw;
+  --modal-height: 80vh;
+  --primary-color: #007bff;
+  --secondary-color: #6c757d;
+  --accent-color: #ff6b6b;
+  --background-color: #121212;
+  --text-color: #e0e0e0;
+  --card-bg-color: #1e1e1e;
+  --card-border-radius: 0.5rem;
+  --card-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+  --card-transition: transform 0.3s ease;
+  --card-hover-transform: scale(1.05);
+  --card-title-color: #e0e0e0;
+  --card-price-color: #007bff;
+  --modal-bg-color: rgba(0, 0, 0, 0.8);
+  --modal-content-bg-color: #1e1e1e;
+  --close-btn-color: #aaa;
+  --close-btn-hover-color: white;
+  --button-bg-color: #007bff;
+  --button-hover-bg-color: #0056b3;
+  --button-text-color: white;
 }
 
 * {
   box-sizing: border-box;
   margin: 0;
   padding: 0;
+  font-family: 'Arial', sans-serif;
 }
 
 body {
-  font-family: Arial, sans-serif;
   background-color: var(--background-color);
-  color: var(--primary-color);
-}
-
-#app {
-  max-width: 1200px;
-  width: 95%;
-  margin: 0 auto;
-  padding: 1rem;
-}
-
-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  background-color: var(--primary-color);
-  color: var(--text-color);
-  padding: 1rem;
-  border-radius: 0.5rem;
-  margin-bottom: 1rem;
-}
-
-#cart-icon {
-  font-size: 1.5rem;
-  cursor: pointer;
-  position: relative;
-}
-
-#cart-badge {
-  background-color: var(--secondary-color);
-  color: var(--text-color);
-  border-radius: 50%;
-  padding: 0.2rem 0.5rem;
-  font-size: 0.8rem;
-  position: absolute;
-  top: -0.5rem;
-  right: -0.5rem;
-}
-
-main {
-  display: grid;
-  gap: 1rem;
-}
-
-#categories {
-  display: flex;
-  justify-content: space-between;
-  margin-bottom: 1rem;
-}
-
-.category-btn {
-  background-color: var(--menu-background);
-  color: var(--primary-color);
-  border: none;
-  padding: 0.5rem 1rem;
-  cursor: pointer;
-  transition: background-color 0.3s, color 0.3s;
-  border-radius: 0.25rem;
-}
-
-.category-btn.active, .category-btn:hover {
-  background-color: var(--secondary-color);
   color: var(--text-color);
 }
 
-#product-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-  gap: 1rem;
-}
-
-.product-item {
-  background-color: var(--menu-background);
-  padding: 1rem;
-  border-radius: 0.5rem;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
+.container {
+  padding: var(--padding);
   text-align: center;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
 }
 
-.product-item img {
-  width: 80px;
-  height: 80px;
-  object-fit: cover;
-  margin-bottom: 0.5rem;
+h1 {
+  font-size: 2.5rem;
+  margin-bottom: 1.5rem;
+  color: var(--primary-color);
 }
 
-.product-item h3 {
-  font-size: 1rem;
-  margin-bottom: 0.5rem;
-}
-
-.product-item p {
-  font-weight: bold;
-  color: var(--secondary-color);
-  margin-bottom: 0.5rem;
-}
-
-#add-product {
-  background-color: var(--menu-background);
-  padding: 1rem;
-  border-radius: 0.5rem;
-  margin-top: 1rem;
-}
-
-#add-product-form {
-  display: grid;
+.mesa-controls {
+  display: flex;
+  justify-content: center;
   gap: 1rem;
+  margin-bottom: 2rem;
 }
 
-input, select, button {
-  padding: 0.5rem;
-  border: 1px solid #ccc;
+input, button {
+  font-size: var(--font-size);
+  padding: 0.5rem 1rem;
+  border: none;
   border-radius: 0.25rem;
+}
+
+input {
+  border: 1px solid var(--secondary-color);
+  background-color: var(--card-bg-color);
+  color: var(--text-color);
 }
 
 button {
-  background-color: var(--secondary-color);
-  color: var(--text-color);
+  background-color: var(--button-bg-color);
+  color: var(--button-text-color);
   cursor: pointer;
-  transition: background-color 0.3s;
-  border: none;
+  transition: background-color 0.3s ease;
 }
 
 button:hover {
-  background-color: #e65c00;
+  background-color: var(--button-hover-bg-color);
 }
 
-#cart-menu {
-  position: fixed;
-  top: 2rem;
-  right: 2rem;
-  background-color: var(--menu-background);
-  padding: 1rem;
-  border-radius: 0.5rem;
-  max-width: 300px;
-  width: 100%;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-}
-
-#cart-menu.hidden {
-  display: none;
-}
-
-#cart-items {
-  list-style-type: none;
-  margin-bottom: 1rem;
-}
-
-#cart-items li {
+.tabs-list {
   display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 0.5rem;
-}
-
-#cart-total {
-  font-weight: bold;
+  justify-content: center;
+  gap: 1rem;
   margin-bottom: 1rem;
 }
 
-#payment-section {
-  display: grid;
-  gap: 1rem;
+.tabs-list button {
+  background-color: var(--secondary-color);
+  color: var(--text-color);
 }
 
-#cash-payment {
-  display: grid;
-  gap: 0.5rem;
+.tabs-list button.active {
+  background-color: var(--primary-color);
+  color: var(--button-text-color);
 }
 
-#cash-payment.hidden {
+.tabs-content .card {
+  background-color: var(--card-bg-color);
+  padding: var(--padding);
+  box-shadow: var(--card-shadow);
+  margin-bottom: var(--padding);
+  border-radius: var(--card-border-radius);
+  max-width: 768px;
+  margin: auto;
+}
+
+.modal {
   display: none;
+  position: fixed;
+  z-index: 1;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  background-color: var(--modal-bg-color);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.modal-content {
+  background-color: var(--modal-content-bg-color);
+  padding: var(--padding);
+  border: 1px solid #888;
+  width: calc(250px * 2 + 3rem);
+  max-height: 600px;
+  overflow-y: auto;
+  border-radius: var(--card-border-radius);
+  box-shadow: var(--card-shadow);
+  position: relative;
+}
+
+.modal-content h2 {
+  margin-bottom: 32px;
+}
+
+.close {
+  color: var(--close-btn-color);
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  font-size: 2rem;
+  cursor: pointer;
+}
+
+.close:hover,
+.close:focus {
+  color: var(--close-btn-hover-color);
+}
+
+select, textarea, input {
+  margin-bottom: 16px;
+  padding: 8px;
+  border-radius: 4px;
+  border: 1px solid var(--secondary-color);
+  background-color: var(--card-bg-color);
+  color: var(--text-color);
+}
+
+.form-group {
+  margin-bottom: 16px;
+}
+
+#formPagamento button, #formPagamentoParcial button {
+  background-color: var(--button-bg-color);
+  color: var(--button-text-color);
+  padding: 10px 20px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+#formPagamento button:hover, #formPagamentoParcial button:hover {
+  background-color: var(--button-hover-bg-color);
+}
+
+.produtos-container {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--padding);
+}
+
+.card {
+  display: flex;
+  flex-direction: column;
+  background-color: var(--card-bg-color);
+  box-shadow: var(--card-shadow);
+  border-radius: var(--card-border-radius);
+  overflow: hidden;
+  transition: var(--card-transition);
+  max-width: 250px;
+  margin: auto;
+}
+
+.card:hover {
+  transform: var(--card-hover-transform);
+}
+
+.card img {
+  width: 100%;
+  height: auto;
+}
+
+.card-content {
+  padding: var(--padding);
+  flex: 1;
+}
+
+.card-content h3 {
+  margin: 0 0 0.5rem;
+  color: var(--card-title-color);
+  font-size: 1.25rem;
+}
+
+.card-content p {
+  margin: 0.5rem 0;
+  color: var(--secondary-color);
+}
+
+.card-content .font-bold {
+  color: var(--card-price-color);
+  font-size: 1.5rem;
+}
+
+.quantidade-input {
+  width: 60px;
+  margin-right: 10px;
+  text-align: center;
+}
+
+.card-content button {
+  background-color: var(--accent-color);
+  color: var(--button-text-color);
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.card-content button:hover {
+  background-color: var(--button-hover-bg-color);
+}
+
+.close-mesa-btn, .pagamento-parcial-btn {
+  max-width: 160px;
+  margin-top: 16px;
+  margin-left: 0;
+}
+
+.container {
+  padding: var(--padding);
+  text-align: center;
+}
+
+h1 {
+  font-size: 2.5rem;
+  margin-bottom: 1.5rem;
+  color: var(--primary-color);
+}
+
+button {
+  background-color: var(--button-bg-color);
+  color: var(--button-text-color);
+  padding: 10px 20px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  margin-top: 20px;
+}
+
+button:hover {
+  background-color: var(--button-hover-bg-color);
+}
+
+table {
+  width: 100%;
+  margin: 20px 0;
+  border-collapse: collapse;
+}
+
+th, td {
+  border: 1px solid var(--secondary-color);
+  padding: 8px;
+  text-align: left;
+}
+
+th {
+  background-color: var(--secondary-color);
+  color: var(--text-color);
+}
+
+#resumoPagamentoParcial h3 {
+  color: var(--primary-color);
+}
+
+#resumoPagamentoParcial p {
+  margin: 0.5rem 0;
 }

@@ -1,71 +1,73 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-br">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sistema PDV</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
-    <link rel="stylesheet" href="styles.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PDV Cafeteria</title>
+  <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <div id="app">
-        <header>
-            <h1>Sistema PDV</h1>
-            <div id="cart-icon">
-                <i class="fas fa-shopping-cart"></i>
-                <span id="cart-badge">0</span>
-            </div>
-        </header>
-        
-        <main>
-            <section id="categories">
-                <button class="category-btn active" data-category="todos">TODOS</button>
-                <button class="category-btn" data-category="bebidas">BEBIDAS</button>
-                <button class="category-btn" data-category="lanches">LANCHES</button>
-                <button class="category-btn" data-category="restaurante">RESTAURANTE</button>
-                <button class="category-btn" data-category="sobremesas">SOBREMESAS</button>
-            </section>
-
-            <section id="product-menu">
-                <div id="product-grid"></div>
-            </section>
-
-            <section id="add-product">
-                <h2>Adicionar Produto</h2>
-                <form id="add-product-form">
-                    <input type="text" id="product-name" placeholder="Nome do Produto" required>
-                    <input type="number" id="product-price" placeholder="Preço" step="0.01" required>
-                    <select id="product-category" required>
-                        <option value="">Selecione a categoria</option>
-                        <option value="bebidas">Bebidas</option>
-                        <option value="lanches">Lanches</option>
-                        <option value="restaurante">Restaurante</option>
-                        <option value="sobremesas">Sobremesas</option>
-                    </select>
-                    <button type="submit">Adicionar Produto</button>
-                </form>
-            </section>
-        </main>
-
-        <div id="cart-menu" class="hidden">
-            <h2>Carrinho</h2>
-            <ul id="cart-items"></ul>
-            <div id="cart-total">Total: R$ <span id="total-amount">0,00</span></div>
-            <div id="payment-section">
-                <select id="payment-method">
-                    <option value="credit">Crédito</option>
-                    <option value="debit">Débito</option>
-                    <option value="pix">PIX</option>
-                    <option value="cash">Dinheiro</option>
-                </select>
-                <div id="cash-payment" class="hidden">
-                    <input type="number" id="cash-amount" placeholder="Valor em dinheiro" step="0.01">
-                    <button id="calculate-change">Calcular Troco</button>
-                </div>
-                <button id="process-payment">Finalizar Compra</button>
-            </div>
-        </div>
+  <div class="container">
+    <h1>PDV Cafeteria</h1>
+    <div class="mesa-controls">
+      <input type="number" id="mesaInput" placeholder="Número da Nova Mesa" max="99" min="1">
+      <button id="abrirMesaBtn">Abrir Nova Mesa</button>
     </div>
-    <script src="script.js"></script>
+    <div id="tabsList" class="tabs-list"></div>
+    <div id="tabsContent" class="tabs-content"></div>
+    <div id="modal" class="modal">
+      <div class="modal-content">
+        <span id="closeModal" class="close">&times;</span>
+        <h2>Catálogo de Produtos</h2>
+        <select id="categoriaSelect">
+          <option value="Todas">Todas</option>
+          <option value="Bebidas">Bebidas</option>
+          <option value="Doces">Doces</option>
+          <option value="Lanches">Lanches</option>
+        </select>
+        <div id="produtosContainer" class="produtos-container"></div>
+      </div>
+    </div>
+    <div id="modalPagamento" class="modal">
+      <div class="modal-content">
+        <span id="closeModalPagamento" class="close">&times;</span>
+        <h2>Pagamento e Observações</h2>
+        <form id="formPagamento">
+          <div class="form-group">
+            <label for="metodoPagamento">Método de Pagamento</label>
+            <select id="metodoPagamento" required>
+              <option value="Cartão de Crédito">Cartão de Crédito</option>
+              <option value="Dinheiro">Dinheiro</option>
+              <option value="Pix">Pix</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="observacoes">Observações</label>
+            <textarea id="observacoes" rows="4"></textarea>
+          </div>
+          <div class="form-group">
+            <input type="checkbox" id="incluirServico">
+            <label for="incluirServico">Incluir 10% de serviço</label>
+          </div>
+          <button type="submit">Finalizar Pedido</button>
+        </form>
+      </div>
+    </div>
+    <div id="modalPagamentoParcial" class="modal">
+      <div class="modal-content">
+        <span id="closeModalPagamentoParcial" class="close">&times;</span>
+        <h2>Pagamento Parcial</h2>
+        <form id="formPagamentoParcial">
+          <div class="form-group">
+            <label for="valorPagamentoParcial">Valor do Pagamento Parcial</label>
+            <input type="number" id="valorPagamentoParcial" step="0.01" min="0" required>
+          </div>
+          <button type="submit">Abater Valor</button>
+        </form>
+        <div id="resumoPagamentoParcial"></div>
+      </div>
+    </div>
+  </div>
+  <script src="script.js"></script>
 </body>
 </html>
