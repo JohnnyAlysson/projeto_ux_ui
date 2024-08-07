@@ -7,16 +7,31 @@
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <div class="container">
+    <div id="loginScreen" class="login-screen">
+        <h2>Login PDV Cafeteria</h2>
+        <form id="loginForm">
+            <input type="text" id="username" placeholder="Usuário" required>
+            <input type="password" id="password" placeholder="Senha" required>
+            <button type="submit">Entrar</button>
+        </form>
+    </div>
+
+    <div id="mainContent" class="container" style="display: none;">
         <h1>PDV Cafeteria</h1>
+
+        <div id="userInfo" class="user-info">
+            <span id="currentUserName"></span>
+            <button id="logoutBtn">Sair</button>
+        </div>
 
         <div class="mesa-controls">
             <input type="number" id="mesaInput" placeholder="Número da Mesa" min="1" max="99">
             <button id="abrirMesaBtn">Abrir Nova Mesa</button>
+            <button id="btnNovoProduto" style="display: none;">Adicionar Novo Produto</button>
+            <button id="btnVerHistorico" style="display: none;">Ver Histórico</button>
         </div>
 
         <div id="tabsList" class="tabs-list"></div>
-
         <div id="tabsContent" class="tabs-content"></div>
 
         <div id="modal" class="modal">
@@ -81,21 +96,83 @@
                 <span id="closeModalNovoProduto" class="close">&times;</span>
                 <h2>Adicionar Novo Produto</h2>
                 <form id="formNovoProduto">
-                    <input type="text" id="nomeProduto" placeholder="Nome do Produto" required>
-                    <input type="number" id="precoProduto" placeholder="Preço" step="0.01" required>
-                    <textarea id="descricaoProduto" placeholder="Descrição" required></textarea>
-                    <select id="categoriaProduto" required>
-                        <option value="">Selecione a Categoria</option>
-                        <option value="Bebidas">Bebidas</option>
-                        <option value="Doces">Doces</option>
-                        <option value="Lanches">Lanches</option>
-                    </select>
-                    <input type="file" id="imagemProduto" accept="image/*" required>
+                    <div class="form-group">
+                        <label for="nomeProduto">Nome do Produto</label>
+                        <input type="text" id="nomeProduto" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="precoProduto">Preço</label>
+                        <input type="number" id="precoProduto" step="0.01" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="descricaoProduto">Descrição</label>
+                        <textarea id="descricaoProduto" required></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="categoriaProduto">Categoria</label>
+                        <select id="categoriaProduto" required>
+                            <option value="Bebidas">Bebidas</option>
+                            <option value="Doces">Doces</option>
+                            <option value="Lanches">Lanches</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="imagemProduto">Imagem</label>
+                        <input type="file" id="imagemProduto" accept="image/*" required>
+                    </div>
                     <button type="submit">Adicionar Produto</button>
                 </form>
             </div>
         </div>
+
+        <div id="modalHistorico" class="modal">
+            <div class="modal-content">
+                <span id="closeModalHistorico" class="close">&times;</span>
+                <h2>Histórico de Vendas</h2>
+                <div id="historicoVendas"></div>
+            </div>
+        </div>
+        
+        <div id="produtosContainer" class="produtos-container"></div>
+
+        <!-- Adicione este novo modal para edição de produtos -->
+        <div id="modalEditarProduto" class="modal">
+            <div class="modal-content">
+                <span id="closeModalEditarProduto" class="close">&times;</span>
+                <h2>Editar Produto</h2>
+                <form id="formEditarProduto">
+                    <input type="hidden" id="editProdutoId">
+                    <div class="form-group">
+                        <label for="editNomeProduto">Nome do Produto</label>
+                        <input type="text" id="editNomeProduto" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="editPrecoProduto">Preço</label>
+                        <input type="number" id="editPrecoProduto" step="0.01" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="editDescricaoProduto">Descrição</label>
+                        <textarea id="editDescricaoProduto" required></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="editCategoriaProduto">Categoria</label>
+                        <select id="editCategoriaProduto" required>
+                            <option value="Bebidas">Bebidas</option>
+                            <option value="Doces">Doces</option>
+                            <option value="Lanches">Lanches</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="editImagemProduto">Nova Imagem (opcional)</label>
+                        <input type="file" id="editImagemProduto" accept="image/*">
+                    </div>
+                    <button type="submit">Salvar Alterações</button>
+                </form>
+            </div>
+        </div>
     </div>
+
+    
 
     <script src="script.js"></script>
 </body>
