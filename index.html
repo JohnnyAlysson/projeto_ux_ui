@@ -51,32 +51,37 @@
 
         <div id="modalPagamento" class="modal">
             <div class="modal-content">
-                <span id="closeModalPagamento" class="close">&times;</span>
-                <h2>Pagamento e Observações</h2>
+                <span class="close">&times;</span>
+                <h2>Pagamento</h2>
                 <form id="formPagamento">
                     <div class="form-group">
-                        <label for="metodoPagamento">Método de Pagamento</label>
+                        <label for="valorPagamento">Valor do Pagamento:</label>
+                        <input type="number" id="valorPagamento" step="0.01" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="metodoPagamento">Método de Pagamento:</label>
                         <select id="metodoPagamento" required>
-                            <option value="Cartão de Crédito">Cartão de Crédito</option>
                             <option value="Dinheiro">Dinheiro</option>
-                            <option value="Pix">Pix</option>
+                            <option value="Cartão de Crédito">Cartão de Crédito</option>
+                            <option value="Cartão de Débito">Cartão de Débito</option>
+                            <option value="PIX">PIX</option>
                         </select>
                     </div>
                     <div class="form-group">
-                        <label for="observacoes">Observações</label>
+                        <label for="observacoes">Observações:</label>
                         <textarea id="observacoes"></textarea>
                     </div>
                     <div class="form-group">
                         <label>
-                            <input type="checkbox" id="incluirServico"> Incluir 10% de serviço
+                            <input type="checkbox" id="pagamentoCompleto"> Pagamento Completo (Fechar Mesa)
                         </label>
                     </div>
-                    <button type="submit">Finalizar Pedido</button>
+                    <button type="submit">Processar Pagamento</button>
                 </form>
             </div>
         </div>
 
-        <div id="modalPagamentoParcial" class="modal">
+        <!-- <div id="modalPagamentoParcial" class="modal">
             <div class="modal-content">
                 <span id="closeModalPagamentoParcial" class="close">&times;</span>
                 <h2>Pagamento Parcial</h2>
@@ -89,7 +94,7 @@
                 </form>
                 <div id="resumoPagamentoParcial"></div>
             </div>
-        </div>
+        </div> -->
 
         <div id="modalNovoProduto" class="modal">
             <div class="modal-content">
