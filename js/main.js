@@ -1,5 +1,5 @@
 // main.js
-import { login, logout, isLoggedIn, currentUser } from './auth.js';
+import { login, logout, isLoggedIn, getCurrentUser } from './auth.js';
 import { initializeUI, openModal, closeModal, showAlert, showLoginScreen, hideLoginScreen } from './ui.js';
 import { loadProdutos, renderProdutos, adicionarNovoProduto, editarProduto, removerProduto, getProdutoById } from './produto.js';
 import { abrirMesa, fecharMesa, renderTabs, adicionarAoCarrinho, getMesaAtual, getMesa, existeMesa } from './mesa.js';
@@ -158,6 +158,19 @@ document.addEventListener('DOMContentLoaded', () => {
             const produtoId = parseInt(e.target.dataset.id);
             if (confirm('Tem certeza que deseja remover este produto?')) {
                 removerProduto(produtoId);
+            }
+        }
+    });
+
+
+    document.addEventListener('click', (e) => {
+        if (e.target.classList.contains('close-mesa-btn')) {
+            const numeroMesa = parseInt(e.target.dataset.mesa, 10);
+            console.log(`Botão de fechar mesa clicado para mesa ${numeroMesa}`);
+            if (!isNaN(numeroMesa)) {
+                fecharMesa(numeroMesa);
+            } else {
+                console.error('Número de mesa inválido:', e.target.dataset.mesa);
             }
         }
     });

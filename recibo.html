@@ -8,39 +8,27 @@
         body {
             font-family: Arial, sans-serif;
             line-height: 1.6;
-            color: #333;
-            max-width: 800px;
-            margin: 0 auto;
+            margin: 0;
             padding: 20px;
+            background-color: #f4f4f4;
+        }
+        .container {
+            max-width: 600px;
+            margin: auto;
+            background: white;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
         }
         h1 {
+            color: #333;
             text-align: center;
-            color: #007bff;
-        }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-bottom: 20px;
-        }
-        th, td {
-            border: 1px solid #ddd;
-            padding: 8px;
-            text-align: left;
-        }
-        th {
-            background-color: #f2f2f2;
-        }
-        .total {
-            font-weight: bold;
-        }
-        .observacoes {
-            margin-top: 20px;
-            font-style: italic;
         }
         button {
             display: block;
+            width: 200px;
             margin: 20px auto;
-            padding: 10px 20px;
+            padding: 10px;
             background-color: #007bff;
             color: white;
             border: none;
@@ -49,6 +37,20 @@
         }
         button:hover {
             background-color: #0056b3;
+        }
+        #reciboContent {
+            margin-top: 20px;
+        }
+        .item-list {
+            list-style-type: none;
+            padding: 0;
+        }
+        .item-list li {
+            margin-bottom: 5px;
+        }
+        .total {
+            font-weight: bold;
+            margin-top: 10px;
         }
     </style>
 </head>
@@ -62,73 +64,44 @@
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             const reciboContent = document.getElementById('reciboContent');
-            const dadosRecibo = JSON.parse(localStorage.getItem('recibo'));
+            try {
+                const dadosRecibo = JSON.parse(localStorage.getItem('recibo'));
+                console.log('Dados do recibo:', dadosRecibo);
 
-            if (dadosRecibo) {
-                let html = `
-                    <h2>Mesa ${dadosRecibo.numeroMesa}</h2>
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Item</th>
-                                <th>Quantidade</th>
-                                <th>Preço Unitário</th>
-                                <th>Subtotal</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                `;
+                if (dadosRecibo && typeof dadosRecibo === 'object') {
+                    let totalFormatted = typeof dadosRecibo.total === 'number' ? dadosRecibo.total.toFixed(2) : dadosRecibo.total;
 
-                dadosRecibo.carrinho.forEach(item => {
-                    html += `
-                        <tr>
-                            <td>${item.nome}</td>
-                            <td>${item.quantidade}</td>
-                            <td>R$ ${item.preco.toFixed(2)}</td>
-                            <td>R$ ${(item.preco * item.quantidade).toFixed(2)}</td>
-                        </tr>
+                    reciboContent.innerHTML = `
+                        <h2>Mesa: ${dadosRecibo.numeroMesa}</h2>
+                        <p><strong>Método de Pagamento:</strong> ${dadosRecibo.metodoPagamento}</p>
+                        <p><strong>Observações:</strong> ${dadosRecibo.observacoes || 'Nenhuma'}</p>
+                        <h3>Itens:</h3>
+                        <ul class="item-list">
+                            ${dadosRecibo.carrinho.map(item => `
+                                <li>${item.nome} - Quantidade: ${item.quantidade} - R$ ${(item.preco * item.quantidade).toFixed(2)}</li>
+                            `).join('')}
+                        </ul>
+                        <p class="total">Total: R$ ${totalFormatted}</p>
+                        ${dadosRecibo.pagamentosParciais && dadosRecibo.pagamentosParciais.length > 0 ? `
+                            <h3>Pagamentos Parciais:</h3>
+                            <ul class="item-list">
+                                ${dadosRecibo.pagamentosParciais.map((pagamento, index) => `
+                                    <li>Pagamento ${index + 1}: R$ ${pagamento.toFixed(2)}</li>
+                                `).join('')}
+                            </ul>
+                        ` : ''}
+                        <p><strong>Total Abatido:</strong> R$ ${dadosRecibo.totalAbatido.toFixed(2)}</p>
                     `;
-                });
-
-                html += `
-                        </tbody>
-                    </table>
-                `;
-
-                if (dadosRecibo.pagamentosParciais && dadosRecibo.pagamentosParciais.length > 0) {
-                    html += `
-                        <h3>Pagamentos Parciais</h3>
-                        <ul>
-                    `;
-                    dadosRecibo.pagamentosParciais.forEach((pagamento, index) => {
-                        html += `<li>Pagamento ${index + 1}: R$ ${pagamento.toFixed(2)}</li>`;
-                    });
-                    html += `</ul>`;
+                } else {
+                    reciboContent.innerHTML = '<p>Dados do recibo não encontrados ou inválidos.</p>';
                 }
-
-                html += `
-                    <p class="total">Subtotal: R$ ${dadosRecibo.total.toFixed(2)}</p>
-                `;
-
-                if (dadosRecibo.servico > 0) {
-                    html += `<p class="total">Serviço (10%): R$ ${dadosRecibo.servico.toFixed(2)}</p>`;
-                }
-
-                html += `
-                    <p class="total">Total: R$ ${(dadosRecibo.total + dadosRecibo.servico).toFixed(2)}</p>
-                    <p class="total">Total Abatido: R$ ${dadosRecibo.totalAbatido.toFixed(2)}</p>
-                    <p class="total">Total Pago: R$ ${dadosRecibo.totalPendente.toFixed(2)}</p>
-                    <p>Método de Pagamento: ${dadosRecibo.metodoPagamento}</p>
-                `;
-
-                if (dadosRecibo.observacoes) {
-                    html += `<p class="observacoes">Observações: ${dadosRecibo.observacoes}</p>`;
-                }
-
-                reciboContent.innerHTML = html;
-            } else {
-                reciboContent.innerHTML = '<p>Nenhum dado de recibo encontrado.</p>';
+            } catch (error) {
+                console.error('Erro ao processar dados do recibo:', error);
+                reciboContent.innerHTML = '<p>Erro ao carregar o recibo. Por favor, tente novamente.</p>';
             }
+
+            // Optionally, clear the localStorage after displaying the receipt
+            // localStorage.removeItem('recibo');
         });
     </script>
 </body>

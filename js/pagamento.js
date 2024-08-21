@@ -1,6 +1,6 @@
 // pagamento.js
 import { getMesa, limparMesa, renderTabs } from './mesa.js';
-import { calcularTotal } from './utils.js';
+import { calcularTotal, formatarMoeda } from './utils.js';
 import { adicionarVendaAoHistorico } from './historico.js';
 import { showAlert, closeModal, updateTotalDisplay } from './ui.js';
 
@@ -23,10 +23,15 @@ export function abaterValorParcial(numeroMesa, valor) {
     mesa.pagamentosParciais.push(valor);
     mesa.totalAbatido = (mesa.totalAbatido || 0) + valor;
     updateTotalDisplay(calcularTotal(mesa.carrinho) - mesa.totalAbatido);
-    showAlert(`Pagamento parcial de R$ ${valor.toFixed(2)} realizado com sucesso.`);
-    closeModal('modalPagamentoParcial');
-    console.log(`Pagamento parcial realizado. Novo total abatido: ${mesa.totalAbatido}`);
-    renderTabs();
+    showAlert(`Pagamento parcial de R$ ${formatarMoeda(valor)} realizado com sucesso.`);
+    
+    if (mesa.totalAbatido >= calcularTotal(mesa.carrinho)) {
+        finalizarPedido(numeroMesa);
+    } else {
+        closeModal('modalPagamentoParcial');
+        console.log(`Pagamento parcial realizado. Novo total abatido: ${mesa.totalAbatido}`);
+        renderTabs();
+    }
 }
 
 export function renderResumoPagamentoParcial(numeroMesa) {
@@ -42,19 +47,19 @@ export function renderResumoPagamentoParcial(numeroMesa) {
     const totalInicial = calcularTotal(mesa.carrinho);
     const totalAbatido = mesa.totalAbatido.toFixed(2);
     const totalRestante = (totalInicial - mesa.totalAbatido).toFixed(2);
-    const pagamentosDetalhes = mesa.pagamentosParciais.map((valor, index) => `Pagamento ${index + 1}: R$ ${valor.toFixed(2)}`).join('<br>');
+    const pagamentosDetalhes = mesa.pagamentosParciais.map((valor, index) => `Pagamento ${index + 1}: R$ ${formatarMoeda(valor)}`).join('<br>');
 
     resumoPagamentoParcial.innerHTML = `
         <h3>Resumo do Pagamento Parcial</h3>
-        <p>Total Inicial: R$ ${totalInicial}</p>
+        <p>Total Inicial: R$ ${formatarMoeda(totalInicial)}</p>
         <p>${pagamentosDetalhes}</p>
         <p>Total Abatido: R$ ${totalAbatido}</p>
         <p>Total Pendente: R$ ${totalRestante}</p>
     `;
 }
 
-export function finalizarPedido(numeroMesa, metodoPagamento, observacoes, incluirServico) {
-    console.log(`Finalizando pedido para mesa ${numeroMesa}`);
+export function finalizarPedido(numeroMesa, metodoPagamento = 'N/A', observacoes = '') {
+    console.log(`Iniciando finalizarPedido para mesa ${numeroMesa}`);
     const mesa = getMesa(numeroMesa);
     if (!mesa) {
         console.error(`Erro: Mesa ${numeroMesa} não encontrada em finalizarPedido`);
@@ -62,31 +67,20 @@ export function finalizarPedido(numeroMesa, metodoPagamento, observacoes, inclui
         return;
     }
     
-    let total = parseFloat(calcularTotal(mesa.carrinho));
-    let servico = 0;
-    if (incluirServico) {
-        servico = total * 0.10;
-        total += servico;
-    }
-    const totalPendente = total - mesa.totalAbatido;
-    
-    if (totalPendente <= 0) {
-        showAlert('Este pedido já foi totalmente pago.');
-        return;
-    }
+    const total = parseFloat(calcularTotal(mesa.carrinho));
+    console.log(`Total calculado: ${total}`);
     
     const dadosRecibo = {
         numeroMesa,
         metodoPagamento,
         observacoes,
         carrinho: mesa.carrinho,
-        total,
-        servico,
-        totalPendente,
+        total: total,
         pagamentosParciais: mesa.pagamentosParciais,
         totalAbatido: mesa.totalAbatido
     };
     
+    console.log('Dados do recibo:', dadosRecibo);
     localStorage.setItem('recibo', JSON.stringify(dadosRecibo));
     
     adicionarVendaAoHistorico({
@@ -96,10 +90,15 @@ export function finalizarPedido(numeroMesa, metodoPagamento, observacoes, inclui
         metodoPagamento
     });
 
+    console.log('Limpando mesa');
     limparMesa(numeroMesa);
     closeModal('modalPagamento');
+    closeModal('modalPagamentoParcial');
     showAlert('Pedido finalizado com sucesso! O recibo foi gerado.');
+    
+    console.log('Abrindo recibo em nova aba');
     window.open('recibo.html', '_blank');
+    
     console.log(`Pedido finalizado para mesa ${numeroMesa}`);
     renderTabs();
 }
@@ -114,12 +113,10 @@ export function validarPagamento(valor, total) {
 }
 
 export function gerarCodigoPix() {
-    // Esta é uma função de exemplo. Na prática, você precisaria integrar com um provedor de pagamentos.
     return 'PIX' + Math.random().toString(36).substr(2, 9).toUpperCase();
 }
 
 export function processarPagamentoCartao(numeroCartao, validade, cvv, valor) {
-    // Esta é uma função de exemplo. Na prática, você precisaria integrar com um provedor de pagamentos.
     return new Promise((resolve, reject) => {
         setTimeout(() => {
             if (numeroCartao && validade && cvv && valor > 0) {
@@ -176,8 +173,8 @@ export function atualizarResumoPayment(numeroMesa) {
 
     resumoPayment.innerHTML = `
         <h3>Resumo do Pagamento</h3>
-        <p>Total da Conta: R$ ${total.toFixed(2)}</p>
-        <p>Total Abatido: R$ ${mesa.totalAbatido.toFixed(2)}</p>
-        <p>Total Pendente: R$ ${totalPendente.toFixed(2)}</p>
+        <p>Total da Conta: R$ ${formatarMoeda(total)}</p>
+        <p>Total Abatido: R$ ${formatarMoeda(mesa.totalAbatido)}</p>
+        <p>Total Pendente: R$ ${formatarMoeda(totalPendente)}</p>
     `;
 }

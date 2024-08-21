@@ -23,10 +23,27 @@ export function abrirMesa(numeroMesa) {
 }
 
 export function fecharMesa(numeroMesa) {
-    if (mesas[numeroMesa] && mesas[numeroMesa].carrinho.length > 0) {
-        openModal('modalPagamento');
+    console.log(`Tentando fechar mesa ${numeroMesa}`);
+    const mesa = mesas[numeroMesa];
+    if (!mesa) {
+        console.error(`Mesa ${numeroMesa} não encontrada`);
+        showAlert('Não é possível fechar uma mesa inexistente.');
+        return;
+    }
+
+    const total = parseFloat(calcularTotal(mesa.carrinho));
+    const totalPago = mesa.totalAbatido || 0;
+
+    console.log(`Total da mesa: ${total}, Total pago: ${totalPago}`);
+
+    if (totalPago < total) {
+        const restante = (total - totalPago).toFixed(2);
+        console.log(`Falta pagar: ${restante}`);
+        showAlert(`Não é possível fechar a mesa. Falta pagar R$ ${restante}.`);
+        openModal('modalPagamentoParcial');
     } else {
-        showAlert('Não é possível fechar uma mesa vazia.');
+        console.log('Chamando finalizarPedido');
+        finalizarPedido(numeroMesa);
     }
 }
 
@@ -109,6 +126,7 @@ export function renderTabs() {
             const fecharMesaBtn = document.createElement('button');
             fecharMesaBtn.textContent = `Fechar Mesa ${numeroMesa}`;
             fecharMesaBtn.className = 'close-mesa-btn mt-4';
+            fecharMesaBtn.dataset.mesa = numeroMesa;
             fecharMesaBtn.addEventListener('click', () => fecharMesa(mesaAtual));
             card.appendChild(fecharMesaBtn);
 
@@ -158,10 +176,14 @@ export function removerItemDoCarrinho(numeroMesa, itemId) {
 export function limparMesa(numeroMesa) {
     console.log(`Limpando mesa ${numeroMesa}`);
     if (mesas[numeroMesa]) {
-        mesas[numeroMesa] = { carrinho: [], totalAbatido: 0, pagamentosParciais: [] };
+        delete mesas[numeroMesa];
         if (mesaAtual === numeroMesa) {
-            renderTabs();
+            mesaAtual = null;
         }
+        renderTabs();
+        console.log(`Mesa ${numeroMesa} limpa com sucesso`);
+    } else {
+        console.error(`Tentativa de limpar mesa inexistente: ${numeroMesa}`);
     }
 }
 
