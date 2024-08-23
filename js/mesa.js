@@ -1,10 +1,18 @@
 // mesa.js
-import { openModal, updateMesaInfo, showAlert } from './ui.js';
-import { calcularTotal } from './utils.js';
-import { renderProdutos } from './produto.js';
+import { showAlert, openModal } from './ui.js';
+import { calcularTotal, formatarMoeda } from './utils.js';
+import { renderProdutos, getProdutoById } from './produto.js';
+import { abrirModalFinalizarPedido } from './pagamento.js';
 
 export let mesas = {};
 export let mesaAtual = null;
+
+function updateMesaInfo(numeroMesa) {
+    const mesaInfoElement = document.getElementById('mesaInfo');
+    if (mesaInfoElement) {
+        mesaInfoElement.textContent = `Mesa Atual: ${numeroMesa}`;
+    }
+}
 
 export function abrirMesa(numeroMesa) {
     console.log(`Abrindo mesa ${numeroMesa}`);
@@ -20,31 +28,6 @@ export function abrirMesa(numeroMesa) {
     renderProdutos();
     console.log('Estado atual das mesas:', mesas);
     console.log('Mesa atual:', mesaAtual);
-}
-
-export function fecharMesa(numeroMesa) {
-    console.log(`Tentando fechar mesa ${numeroMesa}`);
-    const mesa = mesas[numeroMesa];
-    if (!mesa) {
-        console.error(`Mesa ${numeroMesa} não encontrada`);
-        showAlert('Não é possível fechar uma mesa inexistente.');
-        return;
-    }
-
-    const total = parseFloat(calcularTotal(mesa.carrinho));
-    const totalPago = mesa.totalAbatido || 0;
-
-    console.log(`Total da mesa: ${total}, Total pago: ${totalPago}`);
-
-    if (totalPago < total) {
-        const restante = (total - totalPago).toFixed(2);
-        console.log(`Falta pagar: ${restante}`);
-        showAlert(`Não é possível fechar a mesa. Falta pagar R$ ${restante}.`);
-        openModal('modalPagamentoParcial');
-    } else {
-        console.log('Chamando finalizarPedido');
-        finalizarPedido(numeroMesa);
-    }
 }
 
 export function renderTabs() {
@@ -97,8 +80,8 @@ export function renderTabs() {
                 tr.innerHTML = `
                     <td>${item.nome}</td>
                     <td class="text-right">${item.quantidade}</td>
-                    <td class="text-right">R$ ${item.preco.toFixed(2)}</td>
-                    <td class="text-right">R$ ${(item.preco * item.quantidade).toFixed(2)}</td>
+                    <td class="text-right">${formatarMoeda(item.preco)}</td>
+                    <td class="text-right">${formatarMoeda(item.preco * item.quantidade)}</td>
                     <td class="text-center">
                         <button class="btn-remove" data-id="${item.id}">Remover</button>
                     </td>
@@ -108,12 +91,16 @@ export function renderTabs() {
             table.appendChild(tbody);
             card.appendChild(table);
 
+            const total = calcularTotal(mesa.carrinho);
+            const totalAbatido = mesa.totalAbatido || 0;
+            const pendente = total - totalAbatido;
+
             const totalDiv = document.createElement('div');
             totalDiv.className = 'font-bold mt-4 text-right';
             totalDiv.innerHTML = `
-                Total: R$ ${calcularTotal(mesa.carrinho)}<br>
-                Total Abatido: R$ ${mesa.totalAbatido.toFixed(2)}<br>
-                Pendente: R$ ${(calcularTotal(mesa.carrinho) - mesa.totalAbatido).toFixed(2)}
+                Total: ${formatarMoeda(total)}<br>
+                Total Abatido: ${formatarMoeda(totalAbatido)}<br>
+                Pendente: ${formatarMoeda(pendente)}
             `;
             card.appendChild(totalDiv);
 
@@ -123,18 +110,12 @@ export function renderTabs() {
             verCatalogoBtn.addEventListener('click', () => openModal('modal'));
             card.appendChild(verCatalogoBtn);
 
-            const fecharMesaBtn = document.createElement('button');
-            fecharMesaBtn.textContent = `Fechar Mesa ${numeroMesa}`;
-            fecharMesaBtn.className = 'close-mesa-btn mt-4';
-            fecharMesaBtn.dataset.mesa = numeroMesa;
-            fecharMesaBtn.addEventListener('click', () => fecharMesa(mesaAtual));
-            card.appendChild(fecharMesaBtn);
-
-            const pagamentoParcialBtn = document.createElement('button');
-            pagamentoParcialBtn.textContent = 'Pagamento Parcial';
-            pagamentoParcialBtn.className = 'pagamento-parcial-btn mt-4';
-            pagamentoParcialBtn.addEventListener('click', () => openModal('modalPagamentoParcial'));
-            card.appendChild(pagamentoParcialBtn);
+            const finalizarPedidoBtn = document.createElement('button');
+            finalizarPedidoBtn.textContent = `Finalizar Pedido Mesa ${numeroMesa}`;
+            finalizarPedidoBtn.className = 'finalizar-pedido-btn mt-4';
+            finalizarPedidoBtn.dataset.mesa = numeroMesa;
+            finalizarPedidoBtn.addEventListener('click', () => abrirModalFinalizarPedido(parseInt(numeroMesa)));
+            card.appendChild(finalizarPedidoBtn);
 
             tabsContent.appendChild(card);
 
@@ -222,35 +203,6 @@ export function adicionarPagamentoParcial(numeroMesa, valor) {
         mesas[numeroMesa].pagamentosParciais.push(valor);
         mesas[numeroMesa].totalAbatido += valor;
         renderTabs();
-    }
-}
-
-export function transferirMesa(mesaOrigem, mesaDestino) {
-    console.log(`Transferindo mesa ${mesaOrigem} para mesa ${mesaDestino}`);
-    if (mesas[mesaOrigem] && !mesas[mesaDestino]) {
-        mesas[mesaDestino] = { ...mesas[mesaOrigem] };
-        delete mesas[mesaOrigem];
-        if (mesaAtual === mesaOrigem) {
-            mesaAtual = mesaDestino;
-        }
-        renderTabs();
-        showAlert(`Mesa ${mesaOrigem} transferida para Mesa ${mesaDestino}.`);
-    } else {
-        showAlert('Não foi possível transferir a mesa. Verifique se a mesa de origem existe e a de destino está livre.');
-    }
-}
-
-export function unirMesas(mesa1, mesa2) {
-    console.log(`Unindo mesas ${mesa1} e ${mesa2}`);
-    if (mesas[mesa1] && mesas[mesa2]) {
-        mesas[mesa1].carrinho = [...mesas[mesa1].carrinho, ...mesas[mesa2].carrinho];
-        mesas[mesa1].totalAbatido += mesas[mesa2].totalAbatido;
-        mesas[mesa1].pagamentosParciais = [...mesas[mesa1].pagamentosParciais, ...mesas[mesa2].pagamentosParciais];
-        delete mesas[mesa2];
-        renderTabs();
-        showAlert(`Mesas ${mesa1} e ${mesa2} foram unidas na Mesa ${mesa1}.`);
-    } else {
-        showAlert('Não foi possível unir as mesas. Verifique se ambas existem.');
     }
 }
 

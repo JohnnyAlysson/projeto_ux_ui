@@ -1,11 +1,11 @@
 // utils.js
 
 export function calcularTotal(carrinho) {
-  return carrinho.reduce((total, item) => total + item.preco * item.quantidade, 0).toFixed(2);
+  return carrinho.reduce((total, item) => total + item.preco * item.quantidade, 0);
 }
 
 export function formatarMoeda(valor) {
-  return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(valor);
+  return `R$ ${valor.toFixed(2)}`;
 }
 
 export function formatarData(data) {
@@ -67,7 +67,7 @@ export function capitalizeFirstLetter(string) {
 
 export function truncateString(str, num) {
   if (str.length <= num) {
-    return str;
+      return str;
   }
   return str.slice(0, num) + '...';
 }

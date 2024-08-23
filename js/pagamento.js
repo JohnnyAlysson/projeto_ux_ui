@@ -2,60 +2,66 @@
 import { getMesa, limparMesa, renderTabs } from './mesa.js';
 import { calcularTotal, formatarMoeda } from './utils.js';
 import { adicionarVendaAoHistorico } from './historico.js';
-import { showAlert, closeModal, updateTotalDisplay } from './ui.js';
+import { showAlert, closeModal, updateTotalDisplay, openModal } from './ui.js';
 
-export function abaterValorParcial(numeroMesa, valor) {
-    console.log(`Tentando abater valor parcial para mesa ${numeroMesa}`);
+export function abrirModalFinalizarPedido(numeroMesa) {
     const mesa = getMesa(numeroMesa);
     if (!mesa) {
-        console.error(`Erro: Mesa ${numeroMesa} não encontrada em abaterValorParcial`);
-        showAlert(`Erro: Mesa ${numeroMesa} não encontrada. Por favor, abra a mesa novamente.`);
+        showAlert(`Erro: Mesa ${numeroMesa} não encontrada.`);
         return;
     }
-    
-    const totalPendente = calcularTotal(mesa.carrinho) - mesa.totalAbatido;
-    
-    if (valor > totalPendente) {
-        showAlert('O valor do pagamento parcial não pode ser maior que o valor pendente.');
-        return;
-    }
-    
-    mesa.pagamentosParciais.push(valor);
-    mesa.totalAbatido = (mesa.totalAbatido || 0) + valor;
-    updateTotalDisplay(calcularTotal(mesa.carrinho) - mesa.totalAbatido);
-    showAlert(`Pagamento parcial de R$ ${formatarMoeda(valor)} realizado com sucesso.`);
-    
-    if (mesa.totalAbatido >= calcularTotal(mesa.carrinho)) {
-        finalizarPedido(numeroMesa);
-    } else {
-        closeModal('modalPagamentoParcial');
-        console.log(`Pagamento parcial realizado. Novo total abatido: ${mesa.totalAbatido}`);
-        renderTabs();
-    }
+
+    const total = calcularTotal(mesa.carrinho);
+    const totalPendente = total - mesa.totalAbatido;
+
+    const resumoPedido = document.getElementById('resumoPedido');
+    resumoPedido.innerHTML = `
+        <p>Total da Conta: R$ ${formatarMoeda(total)}</p>
+        <p>Total Abatido: R$ ${formatarMoeda(mesa.totalAbatido)}</p>
+        <p>Total Pendente: R$ ${formatarMoeda(totalPendente)}</p>
+    `;
+
+    const formFinalizarPedido = document.getElementById('formFinalizarPedido');
+    formFinalizarPedido.onsubmit = (e) => processarPagamento(e, numeroMesa);
+
+    openModal('modalFinalizarPedido');
 }
 
-export function renderResumoPagamentoParcial(numeroMesa) {
-    console.log(`Renderizando resumo de pagamento parcial para mesa ${numeroMesa}`);
-    const resumoPagamentoParcial = document.getElementById('resumoPagamentoParcial');
+function processarPagamento(e, numeroMesa) {
+    e.preventDefault();
     const mesa = getMesa(numeroMesa);
-    if (!mesa) {
-        console.error(`Erro: Mesa ${numeroMesa} não encontrada em renderResumoPagamentoParcial`);
-        resumoPagamentoParcial.innerHTML = '<p>Erro: Mesa não encontrada.</p>';
+    const valorPagamento = parseFloat(document.getElementById('valorPagamento').value);
+    const metodoPagamento = document.getElementById('metodoPagamento').value;
+    const incluirServico = document.getElementById('incluirServico').checked;
+    const observacoes = document.getElementById('observacoes').value;
+
+    const total = calcularTotal(mesa.carrinho);
+    const totalPendente = total - mesa.totalAbatido;
+    let valorFinal = valorPagamento;
+
+    if (incluirServico) {
+        valorFinal *= 1.1; // Add 10% service charge
+    }
+
+    if (valorFinal > totalPendente) {
+        showAlert('O valor do pagamento não pode ser maior que o valor pendente.');
         return;
     }
-    
-    const totalInicial = calcularTotal(mesa.carrinho);
-    const totalAbatido = mesa.totalAbatido.toFixed(2);
-    const totalRestante = (totalInicial - mesa.totalAbatido).toFixed(2);
-    const pagamentosDetalhes = mesa.pagamentosParciais.map((valor, index) => `Pagamento ${index + 1}: R$ ${formatarMoeda(valor)}`).join('<br>');
 
-    resumoPagamentoParcial.innerHTML = `
-        <h3>Resumo do Pagamento Parcial</h3>
-        <p>Total Inicial: R$ ${formatarMoeda(totalInicial)}</p>
-        <p>${pagamentosDetalhes}</p>
-        <p>Total Abatido: R$ ${totalAbatido}</p>
-        <p>Total Pendente: R$ ${totalRestante}</p>
-    `;
+    mesa.totalAbatido += valorFinal;
+    mesa.pagamentosParciais.push({
+        valor: valorFinal,
+        metodo: metodoPagamento,
+        data: new Date().toISOString()
+    });
+
+    if (mesa.totalAbatido >= total) {
+        finalizarPedido(numeroMesa, metodoPagamento, observacoes);
+    } else {
+        showAlert(`Pagamento parcial de R$ ${formatarMoeda(valorFinal)} realizado com sucesso.`);
+        closeModal('modalFinalizarPedido');
+        renderTabs();
+    }
 }
 
 export function finalizarPedido(numeroMesa, metodoPagamento = 'N/A', observacoes = '') {
@@ -87,13 +93,15 @@ export function finalizarPedido(numeroMesa, metodoPagamento = 'N/A', observacoes
         data: new Date().toLocaleString(),
         numeroMesa,
         total,
-        metodoPagamento
+        metodoPagamento,
+        observacoes,
+        carrinho: mesa.carrinho,
+        pagamentosParciais: mesa.pagamentosParciais
     });
 
     console.log('Limpando mesa');
     limparMesa(numeroMesa);
-    closeModal('modalPagamento');
-    closeModal('modalPagamentoParcial');
+    closeModal('modalFinalizarPedido');
     showAlert('Pedido finalizado com sucesso! O recibo foi gerado.');
     
     console.log('Abrindo recibo em nova aba');

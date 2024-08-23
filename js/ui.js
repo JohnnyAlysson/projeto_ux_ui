@@ -38,11 +38,25 @@ export function hideAdminFeatures() {
 }
 
 export function openModal(modalId) {
-    document.getElementById(modalId).style.display = 'flex';
+    const modal = document.getElementById(modalId);
+    if (modal) {
+        modal.style.display = 'flex';
+    } else {
+        console.error(`Modal with id "${modalId}" not found`);
+    }
 }
+
 
 export function closeModal(modalId) {
     document.getElementById(modalId).style.display = 'none';
+    console.log("working")
+}
+
+export function closeAllModals() {
+    document.querySelectorAll('.modal').forEach(modal => {
+        modal.style.display = 'none';
+        console.log("working")
+    });
 }
 
 export function showAlert(message) {

@@ -1,9 +1,9 @@
 // main.js
 import { login, logout, isLoggedIn, getCurrentUser } from './auth.js';
-import { initializeUI, openModal, closeModal, showAlert, showLoginScreen, hideLoginScreen } from './ui.js';
+import { initializeUI, openModal, closeModal, showAlert, showLoginScreen, hideLoginScreen, closeAllModals } from './ui.js';
 import { loadProdutos, renderProdutos, adicionarNovoProduto, editarProduto, removerProduto, getProdutoById } from './produto.js';
-import { abrirMesa, fecharMesa, renderTabs, adicionarAoCarrinho, getMesaAtual, getMesa, existeMesa } from './mesa.js';
-import { abaterValorParcial, finalizarPedido } from './pagamento.js';
+import { abrirMesa, renderTabs, adicionarAoCarrinho, getMesaAtual, existeMesa } from './mesa.js';
+import { abrirModalFinalizarPedido } from './pagamento.js';
 import { loadHistoricoVendas, renderHistoricoVendas, exportarHistoricoCSV } from './historico.js';
 import { formatarMoeda } from './utils.js';
 
@@ -14,26 +14,23 @@ document.addEventListener('DOMContentLoaded', () => {
     const mesaInput = document.getElementById('mesaInput');
     const abrirMesaBtn = document.getElementById('abrirMesaBtn');
     const categoriaSelect = document.getElementById('categoriaSelect');
-    const formPagamento = document.getElementById('formPagamento');
-    const formPagamentoParcial = document.getElementById('formPagamentoParcial');
     const formNovoProduto = document.getElementById('formNovoProduto');
     const btnNovoProduto = document.getElementById('btnNovoProduto');
     const btnVerHistorico = document.getElementById('btnVerHistorico');
     const btnExportarCSV = document.getElementById('btnExportarCSV');
 
-
     loginForm.addEventListener('submit', (e) => {
-      e.preventDefault();
-      const username = document.getElementById('username').value;
-      const password = document.getElementById('password').value;
-      login(username, password)
-          .then((user) => {
-              hideLoginScreen();
-              initializeUI();
-              loadProdutos().then(renderProdutos);
-              loadHistoricoVendas();
-          })
-          .catch(error => showAlert(error.message));
+        e.preventDefault();
+        const username = document.getElementById('username').value;
+        const password = document.getElementById('password').value;
+        login(username, password)
+            .then((user) => {
+                hideLoginScreen();
+                initializeUI();
+                loadProdutos().then(renderProdutos);
+                loadHistoricoVendas();
+            })
+            .catch(error => showAlert(error.message));
     });
 
     logoutBtn.addEventListener('click', () => {
@@ -55,43 +52,6 @@ document.addEventListener('DOMContentLoaded', () => {
     categoriaSelect.addEventListener('change', () => {
         const categoria = categoriaSelect.value;
         renderProdutos(categoria);
-    });
-
-    formPagamento.addEventListener('submit', (e) => {
-        e.preventDefault();
-        const mesaAtual = getMesaAtual();
-        if (!mesaAtual) {
-            showAlert("Nenhuma mesa selecionada. Por favor, abra uma mesa primeiro.");
-            return;
-        }
-        const metodoPagamento = document.getElementById('metodoPagamento').value;
-        const observacoes = document.getElementById('observacoes').value;
-        const incluirServico = document.getElementById('incluirServico').checked;
-        finalizarPedido(mesaAtual, metodoPagamento, observacoes, incluirServico);
-        closeModal('modalPagamento');
-        renderTabs();
-    });
-
-    formPagamentoParcial.addEventListener('submit', (e) => {
-        e.preventDefault();
-        const mesaAtual = getMesaAtual();
-        console.log('Tentando fazer pagamento parcial. Mesa atual:', mesaAtual);
-        if (!mesaAtual) {
-            showAlert("Nenhuma mesa selecionada. Por favor, abra uma mesa primeiro.");
-            return;
-        }
-        if (!existeMesa(mesaAtual)) {
-            showAlert(`Erro: Mesa ${mesaAtual} não encontrada.`);
-            return;
-        }
-        const valorPagamentoParcial = parseFloat(document.getElementById('valorPagamentoParcial').value);
-        if (!isNaN(valorPagamentoParcial) && valorPagamentoParcial > 0) {
-            abaterValorParcial(mesaAtual, valorPagamentoParcial);
-            closeModal('modalPagamentoParcial');
-            renderTabs();
-        } else {
-            showAlert("Por favor, insira um valor válido para o pagamento parcial.");
-        }
     });
 
     formNovoProduto.addEventListener('submit', (e) => {
@@ -126,7 +86,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     btnExportarCSV.addEventListener('click', exportarHistoricoCSV);
 
-    // Modal close buttons
     document.querySelectorAll('.close').forEach(closeBtn => {
         closeBtn.addEventListener('click', () => {
             const modalId = closeBtn.closest('.modal').id;
@@ -137,7 +96,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Close modals when clicking outside
     window.addEventListener('click', (event) => {
         if (event.target.classList.contains('modal')) {
-            closeModal(event.target.id);
+            closeAllModals();
         }
     });
 
@@ -162,13 +121,12 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-
     document.addEventListener('click', (e) => {
-        if (e.target.classList.contains('close-mesa-btn')) {
+        if (e.target.classList.contains('finalizar-pedido-btn')) {
             const numeroMesa = parseInt(e.target.dataset.mesa, 10);
-            console.log(`Botão de fechar mesa clicado para mesa ${numeroMesa}`);
+            console.log(`Botão de finalizar pedido clicado para mesa ${numeroMesa}`);
             if (!isNaN(numeroMesa)) {
-                fecharMesa(numeroMesa);
+                abrirModalFinalizarPedido(numeroMesa);
             } else {
                 console.error('Número de mesa inválido:', e.target.dataset.mesa);
             }
@@ -249,28 +207,75 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 function checkLoginState() {
-  if (isLoggedIn()) {
-      const user = getCurrentUser();
-      if (user) {
-          hideLoginScreen();
-          initializeUI();
-          loadProdutos().then(renderProdutos);
-          loadHistoricoVendas();
-      } else {
-          showLoginScreen();
-      }
-  } else {
-      showLoginScreen();
-  }
+    if (isLoggedIn()) {
+        const user = getCurrentUser();
+        if (user) {
+            hideLoginScreen();
+            initializeUI();
+            loadProdutos().then(renderProdutos);
+            loadHistoricoVendas();
+        } else {
+            showLoginScreen();
+        }
+    } else {
+        showLoginScreen();
+    }
 }
-
 
 function resetUIState() {
     showLoginScreen();
-    // Clear any user-specific data from the UI
     document.getElementById('currentUserName').textContent = '';
-    // Hide main content
     document.getElementById('mainContent').style.display = 'none';
-    // Clear any open tables or other user-specific state
-    // ... add any other necessary reset operations ...
+    closeAllModals();
+
+    const mesaInput = document.getElementById('mesaInput');
+    if (mesaInput) mesaInput.value = '';
+
+    const produtosContainer = document.getElementById('produtosContainer');
+    if (produtosContainer) produtosContainer.innerHTML = '';
+
+    const categoriaSelect = document.getElementById('categoriaSelect');
+    if (categoriaSelect) categoriaSelect.selectedIndex = 0;
+
+    const searchInput = document.getElementById('searchProdutos');
+    if (searchInput) searchInput.value = '';
+
+    const tabsList = document.getElementById('tabsList');
+    const tabsContent = document.getElementById('tabsContent');
+    if (tabsList) tabsList.innerHTML = '';
+    if (tabsContent) tabsContent.innerHTML = '';
+
+    console.log('UI state reset completed');
+}
+
+// Error handling function
+function handleError(error) {
+    console.error('An error occurred:', error);
+    showAlert('Ocorreu um erro. Por favor, tente novamente mais tarde.');
+}
+
+// Global error handling
+window.addEventListener('error', (event) => {
+    handleError(event.error);
+});
+
+window.addEventListener('unhandledrejection', (event) => {
+    handleError(event.reason);
+});
+
+// Initialize the application
+function initApp() {
+    checkLoginState();
+    loadProdutos()
+        .then(renderProdutos)
+        .catch(handleError);
+    loadHistoricoVendas()
+        .catch(handleError);
+}
+
+// Call initApp when the DOM is fully loaded
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initApp);
+} else {
+    initApp();
 }
