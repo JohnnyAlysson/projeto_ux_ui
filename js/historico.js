@@ -63,62 +63,7 @@ export function renderHistoricoVendas() {
 }
 
 function salvarHistoricoVendas() {
-    // Em uma aplicação real, isso enviaria os dados para um servidor
-    // Para este exemplo, vamos apenas simular salvando no localStorage
     localStorage.setItem('historicoVendas', JSON.stringify(historicoVendas));
-}
-
-export function filtrarHistoricoPorData(dataInicio, dataFim) {
-    return historicoVendas.filter(venda => {
-        const dataVenda = new Date(venda.data);
-        return dataVenda >= dataInicio && dataVenda <= dataFim;
-    });
-}
-
-export function calcularTotalVendas() {
-    return historicoVendas.reduce((total, venda) => total + venda.total, 0);
-}
-
-export function calcularTotalVendasPorMetodo(metodoPagamento) {
-    return historicoVendas
-        .filter(venda => venda.metodoPagamento === metodoPagamento)
-        .reduce((total, venda) => total + venda.total, 0);
-}
-
-export function obterVendasPorMesa(numeroMesa) {
-    return historicoVendas.filter(venda => venda.numeroMesa === numeroMesa);
-}
-
-export function obterVendasPorPeriodo(periodoInicio, periodoFim) {
-    return historicoVendas.filter(venda => {
-        const dataVenda = new Date(venda.data);
-        return dataVenda >= periodoInicio && dataVenda <= periodoFim;
-    });
-}
-
-export function calcularMediaVendasDiarias(periodoInicio, periodoFim) {
-    const vendasNoPeriodo = obterVendasPorPeriodo(periodoInicio, periodoFim);
-    const totalVendas = vendasNoPeriodo.reduce((total, venda) => total + venda.total, 0);
-    const diasNoPeriodo = (periodoFim - periodoInicio) / (1000 * 60 * 60 * 24) + 1;
-    return totalVendas / diasNoPeriodo;
-}
-
-export function obterTopProdutosVendidos(limite = 5) {
-    const produtosVendidos = {};
-    historicoVendas.forEach(venda => {
-        venda.carrinho.forEach(item => {
-            if (produtosVendidos[item.nome]) {
-                produtosVendidos[item.nome] += item.quantidade;
-            } else {
-                produtosVendidos[item.nome] = item.quantidade;
-            }
-        });
-    });
-
-    return Object.entries(produtosVendidos)
-        .sort((a, b) => b[1] - a[1])
-        .slice(0, limite)
-        .map(([nome, quantidade]) => ({ nome, quantidade }));
 }
 
 export function exportarHistoricoCSV() {

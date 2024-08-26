@@ -10,8 +10,10 @@ export function login(username, password) {
                 currentUser = user;
                 localStorage.setItem('isLoggedIn', 'true');
                 localStorage.setItem('currentUser', JSON.stringify(user));
+                console.log("sucessfull login")
                 return user;
             }
+            console.log("login inválido")
             throw new Error('Usuário ou senha inválidos');
         });
 }

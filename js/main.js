@@ -1,14 +1,13 @@
 // main.js
 import { login, logout, isLoggedIn, getCurrentUser } from './auth.js';
-import { initializeUI, openModal, closeModal, showAlert, showLoginScreen, hideLoginScreen, closeAllModals } from './ui.js';
+import { initializeUI, openModal, closeModal, showAlert, showLoginScreen, hideLoginScreen } from './ui.js';
 import { loadProdutos, renderProdutos, adicionarNovoProduto, editarProduto, removerProduto, getProdutoById } from './produto.js';
-import { abrirMesa, renderTabs, adicionarAoCarrinho, getMesaAtual, existeMesa } from './mesa.js';
+import { abrirMesa, renderTabs, adicionarAoCarrinho, getMesaAtual } from './mesa.js';
 import { abrirModalFinalizarPedido } from './pagamento.js';
 import { loadHistoricoVendas, renderHistoricoVendas, exportarHistoricoCSV } from './historico.js';
 import { formatarMoeda } from './utils.js';
 
 document.addEventListener('DOMContentLoaded', () => {
-    checkLoginState();
     const loginForm = document.getElementById('loginForm');
     const logoutBtn = document.getElementById('logoutBtn');
     const mesaInput = document.getElementById('mesaInput');
@@ -18,6 +17,42 @@ document.addEventListener('DOMContentLoaded', () => {
     const btnNovoProduto = document.getElementById('btnNovoProduto');
     const btnVerHistorico = document.getElementById('btnVerHistorico');
     const btnExportarCSV = document.getElementById('btnExportarCSV');
+
+    function checkLoginState() {
+        if (isLoggedIn()) {
+            const user = getCurrentUser();
+            if (user) {
+                hideLoginScreen();
+                initializeUI();
+                loadProdutos().then(renderProdutos);
+                loadHistoricoVendas();
+            } else {
+                showLoginScreen();
+            }
+        } else {
+            showLoginScreen();
+        }
+    }
+
+    function resetUIState() {
+        showLoginScreen();
+        document.getElementById('currentUserName').textContent = '';
+        document.getElementById('mainContent').style.display = 'none';
+        document.querySelectorAll('.modal').forEach(modal => {
+            modal.style.display = 'none';
+        });
+        if (document.getElementById('mesaInput')) document.getElementById('mesaInput').value = '';
+        if (document.getElementById('produtosContainer')) document.getElementById('produtosContainer').innerHTML = '';
+        if (document.getElementById('categoriaSelect')) document.getElementById('categoriaSelect').selectedIndex = 0;
+        if (document.getElementById('searchProdutos')) document.getElementById('searchProdutos').value = '';
+        if (document.getElementById('tabsList')) document.getElementById('tabsList').innerHTML = '';
+        if (document.getElementById('tabsContent')) document.getElementById('tabsContent').innerHTML = '';
+    }
+
+    function handleError(error) {
+        console.error('An error occurred:', error);
+        showAlert('Ocorreu um erro. Por favor, tente novamente mais tarde.');
+    }
 
     loginForm.addEventListener('submit', (e) => {
         e.preventDefault();
@@ -30,7 +65,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 loadProdutos().then(renderProdutos);
                 loadHistoricoVendas();
             })
-            .catch(error => showAlert(error.message));
+            .catch(handleError);
     });
 
     logoutBtn.addEventListener('click', () => {
@@ -43,15 +78,13 @@ document.addEventListener('DOMContentLoaded', () => {
         const numeroMesa = parseInt(mesaInput.value, 10);
         if (!isNaN(numeroMesa) && numeroMesa > 0 && numeroMesa <= 99) {
             abrirMesa(numeroMesa);
-            console.log(`Mesa ${numeroMesa} aberta. Mesa atual:`, getMesaAtual());
         } else {
             showAlert("Por favor, insira um número de mesa válido (1-99).");
         }
     });
 
     categoriaSelect.addEventListener('change', () => {
-        const categoria = categoriaSelect.value;
-        renderProdutos(categoria);
+        renderProdutos(categoriaSelect.value);
     });
 
     formNovoProduto.addEventListener('submit', (e) => {
@@ -75,15 +108,11 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    btnNovoProduto.addEventListener('click', () => {
-        openModal('modalNovoProduto');
-    });
-
+    btnNovoProduto.addEventListener('click', () => openModal('modalNovoProduto'));
     btnVerHistorico.addEventListener('click', () => {
         renderHistoricoVendas();
         openModal('modalHistorico');
     });
-
     btnExportarCSV.addEventListener('click', exportarHistoricoCSV);
 
     document.querySelectorAll('.close').forEach(closeBtn => {
@@ -93,14 +122,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
-    // Close modals when clicking outside
-    window.addEventListener('click', (event) => {
-        if (event.target.classList.contains('modal')) {
-            closeAllModals();
-        }
-    });
-
-    // Initialize product editing
     document.getElementById('produtosContainer').addEventListener('click', (e) => {
         if (e.target.classList.contains('edit-btn')) {
             const produtoId = parseInt(e.target.dataset.id);
@@ -118,13 +139,25 @@ document.addEventListener('DOMContentLoaded', () => {
             if (confirm('Tem certeza que deseja remover este produto?')) {
                 removerProduto(produtoId);
             }
+        } else if (e.target.classList.contains('add-to-cart-btn')) {
+            const produtoId = parseInt(e.target.dataset.id);
+            const quantidade = parseInt(document.querySelector(`input[data-id="${produtoId}"]`).value);
+            const produto = getProdutoById(produtoId);
+            const mesaAtual = getMesaAtual();
+            if (!mesaAtual) {
+                showAlert("Por favor, abra uma mesa antes de adicionar produtos ao carrinho.");
+                return;
+            }
+            if (produto && !isNaN(quantidade) && quantidade > 0) {
+                adicionarAoCarrinho(produto, quantidade, mesaAtual);
+                showAlert(`${quantidade} ${produto.nome}(s) adicionado(s) ao carrinho da Mesa ${mesaAtual}.`);
+            }
         }
     });
 
     document.addEventListener('click', (e) => {
         if (e.target.classList.contains('finalizar-pedido-btn')) {
             const numeroMesa = parseInt(e.target.dataset.mesa, 10);
-            console.log(`Botão de finalizar pedido clicado para mesa ${numeroMesa}`);
             if (!isNaN(numeroMesa)) {
                 abrirModalFinalizarPedido(numeroMesa);
             } else {
@@ -158,25 +191,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // Add to cart functionality
-    document.getElementById('produtosContainer').addEventListener('click', (e) => {
-        if (e.target.classList.contains('add-to-cart-btn')) {
-            const produtoId = parseInt(e.target.dataset.id);
-            const quantidade = parseInt(document.querySelector(`input[data-id="${produtoId}"]`).value);
-            const produto = getProdutoById(produtoId);
-            const mesaAtual = getMesaAtual();
-            if (!mesaAtual) {
-                showAlert("Por favor, abra uma mesa antes de adicionar produtos ao carrinho.");
-                return;
-            }
-            if (produto && !isNaN(quantidade) && quantidade > 0) {
-                adicionarAoCarrinho(produto, quantidade, mesaAtual);
-                showAlert(`${quantidade} ${produto.nome}(s) adicionado(s) ao carrinho da Mesa ${mesaAtual}.`);
-            }
-        }
-    });
-
-    // Real-time total update
     document.getElementById('produtosContainer').addEventListener('input', (e) => {
         if (e.target.classList.contains('quantity-input')) {
             const produtoId = parseInt(e.target.dataset.id);
@@ -189,7 +203,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // Product search functionality
     const searchInput = document.getElementById('searchProdutos');
     searchInput.addEventListener('input', (e) => {
         const searchTerm = e.target.value.toLowerCase();
@@ -204,78 +217,16 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
     });
+
+    checkLoginState();
 });
 
-function checkLoginState() {
-    if (isLoggedIn()) {
-        const user = getCurrentUser();
-        if (user) {
-            hideLoginScreen();
-            initializeUI();
-            loadProdutos().then(renderProdutos);
-            loadHistoricoVendas();
-        } else {
-            showLoginScreen();
-        }
-    } else {
-        showLoginScreen();
-    }
-}
-
-function resetUIState() {
-    showLoginScreen();
-    document.getElementById('currentUserName').textContent = '';
-    document.getElementById('mainContent').style.display = 'none';
-    closeAllModals();
-
-    const mesaInput = document.getElementById('mesaInput');
-    if (mesaInput) mesaInput.value = '';
-
-    const produtosContainer = document.getElementById('produtosContainer');
-    if (produtosContainer) produtosContainer.innerHTML = '';
-
-    const categoriaSelect = document.getElementById('categoriaSelect');
-    if (categoriaSelect) categoriaSelect.selectedIndex = 0;
-
-    const searchInput = document.getElementById('searchProdutos');
-    if (searchInput) searchInput.value = '';
-
-    const tabsList = document.getElementById('tabsList');
-    const tabsContent = document.getElementById('tabsContent');
-    if (tabsList) tabsList.innerHTML = '';
-    if (tabsContent) tabsContent.innerHTML = '';
-
-    console.log('UI state reset completed');
-}
-
-// Error handling function
-function handleError(error) {
-    console.error('An error occurred:', error);
-    showAlert('Ocorreu um erro. Por favor, tente novamente mais tarde.');
-}
-
-// Global error handling
 window.addEventListener('error', (event) => {
-    handleError(event.error);
+    console.error('An error occurred:', event.error);
+    showAlert('Ocorreu um erro. Por favor, tente novamente mais tarde.');
 });
 
 window.addEventListener('unhandledrejection', (event) => {
-    handleError(event.reason);
+    console.error('An unhandled rejection occurred:', event.reason);
+    showAlert('Ocorreu um erro. Por favor, tente novamente mais tarde.');
 });
-
-// Initialize the application
-function initApp() {
-    checkLoginState();
-    loadProdutos()
-        .then(renderProdutos)
-        .catch(handleError);
-    loadHistoricoVendas()
-        .catch(handleError);
-}
-
-// Call initApp when the DOM is fully loaded
-if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', initApp);
-} else {
-    initApp();
-}

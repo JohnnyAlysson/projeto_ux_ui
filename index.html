@@ -10,7 +10,7 @@
     <div id="loginScreen" class="login-screen">
         <h2>Login PDV Cafeteria</h2>
         <form id="loginForm">
-            <input type="text" id="username" placeholder="Nome de usuário" required>
+            <input type="text" id="username" placeholder="Usuário" required>
             <input type="password" id="password" placeholder="Senha" required>
             <button type="submit">Entrar</button>
         </form>
@@ -27,8 +27,8 @@
         <div class="mesa-controls">
             <input type="number" id="mesaInput" placeholder="Número da Mesa" min="1" max="99">
             <button id="abrirMesaBtn">Abrir Nova Mesa</button>
-            <button id="btnNovoProduto" style="display: none;">Adicionar Novo Produto</button>
-            <button id="btnVerHistorico" style="display: none;">Ver Histórico</button>
+            <button id="btnNovoProduto">Adicionar Novo Produto</button>
+            <button id="btnVerHistorico">Ver Histórico</button>
         </div>
 
         <div id="tabsList" class="tabs-list"></div>
@@ -71,11 +71,6 @@
                         <label for="observacoes">Observações:</label>
                         <textarea id="observacoes"></textarea>
                     </div>
-                    <div class="form-group">
-                        <label>
-                            <input type="checkbox" id="pagamentoCompleto"> Pagamento Completo (Fechar Mesa)
-                        </label>
-                    </div>
                     <button type="submit">Processar Pagamento</button>
                 </form>
             </div>
@@ -89,21 +84,16 @@
                 <form id="formFinalizarPedido">
                     <div class="form-group">
                         <label for="valorPagamento">Valor do Pagamento:</label>
-                        <input type="number" id="valorPagamento" required min="0" step="0.01">
+                        <input type="number" id="valorPagamento" step="0.01" required>
                     </div>
                     <div class="form-group">
                         <label for="metodoPagamento">Método de Pagamento:</label>
                         <select id="metodoPagamento" required>
-                            <option value="dinheiro">Dinheiro</option>
-                            <option value="cartao_credito">Cartão de Crédito</option>
-                            <option value="cartao_debito">Cartão de Débito</option>
-                            <option value="pix">PIX</option>
+                            <option value="Dinheiro">Dinheiro</option>
+                            <option value="Cartão de Crédito">Cartão de Crédito</option>
+                            <option value="Cartão de Débito">Cartão de Débito</option>
+                            <option value="PIX">PIX</option>
                         </select>
-                    </div>
-                    <div class="form-group">
-                        <label for="incluirServico">
-                            <input type="checkbox" id="incluirServico"> Incluir 10% de serviço
-                        </label>
                     </div>
                     <div class="form-group">
                         <label for="observacoes">Observações:</label>
@@ -114,40 +104,25 @@
             </div>
         </div>
 
-        <div id="modalPagamentoParcial" class="modal">
-            <div class="modal-content">
-                <span id="closeModalPagamentoParcial" class="close">&times;</span>
-                <h2>Pagamento Parcial</h2>
-                <form id="formPagamentoParcial">
-                    <div class="form-group">
-                        <label for="valorPagamentoParcial">Valor do Pagamento Parcial</label>
-                        <input type="number" id="valorPagamentoParcial" step="0.01" required>
-                    </div>
-                    <button type="submit">Abater Valor</button>
-                </form>
-                <div id="resumoPagamentoParcial"></div>
-            </div>
-        </div>
-
         <div id="modalNovoProduto" class="modal">
             <div class="modal-content">
                 <span id="closeModalNovoProduto" class="close">&times;</span>
                 <h2>Adicionar Novo Produto</h2>
                 <form id="formNovoProduto">
                     <div class="form-group">
-                        <label for="nomeProduto">Nome do Produto</label>
+                        <label for="nomeProduto">Nome do Produto:</label>
                         <input type="text" id="nomeProduto" required>
                     </div>
                     <div class="form-group">
-                        <label for="precoProduto">Preço</label>
+                        <label for="precoProduto">Preço:</label>
                         <input type="number" id="precoProduto" step="0.01" required>
                     </div>
                     <div class="form-group">
-                        <label for="descricaoProduto">Descrição</label>
+                        <label for="descricaoProduto">Descrição:</label>
                         <textarea id="descricaoProduto" required></textarea>
                     </div>
                     <div class="form-group">
-                        <label for="categoriaProduto">Categoria</label>
+                        <label for="categoriaProduto">Categoria:</label>
                         <select id="categoriaProduto" required>
                             <option value="Bebidas">Bebidas</option>
                             <option value="Doces">Doces</option>
@@ -155,7 +130,7 @@
                         </select>
                     </div>
                     <div class="form-group">
-                        <label for="imagemProduto">Imagem</label>
+                        <label for="imagemProduto">Imagem:</label>
                         <input type="file" id="imagemProduto" accept="image/*" required>
                     </div>
                     <button type="submit">Adicionar Produto</button>
@@ -179,19 +154,19 @@
                 <form id="formEditarProduto">
                     <input type="hidden" id="editProdutoId">
                     <div class="form-group">
-                        <label for="editNomeProduto">Nome do Produto</label>
+                        <label for="editNomeProduto">Nome do Produto:</label>
                         <input type="text" id="editNomeProduto" required>
                     </div>
                     <div class="form-group">
-                        <label for="editPrecoProduto">Preço</label>
+                        <label for="editPrecoProduto">Preço:</label>
                         <input type="number" id="editPrecoProduto" step="0.01" required>
                     </div>
                     <div class="form-group">
-                        <label for="editDescricaoProduto">Descrição</label>
+                        <label for="editDescricaoProduto">Descrição:</label>
                         <textarea id="editDescricaoProduto" required></textarea>
                     </div>
                     <div class="form-group">
-                        <label for="editCategoriaProduto">Categoria</label>
+                        <label for="editCategoriaProduto">Categoria:</label>
                         <select id="editCategoriaProduto" required>
                             <option value="Bebidas">Bebidas</option>
                             <option value="Doces">Doces</option>
@@ -199,7 +174,7 @@
                         </select>
                     </div>
                     <div class="form-group">
-                        <label for="editImagemProduto">Nova Imagem (opcional)</label>
+                        <label for="editImagemProduto">Nova Imagem (opcional):</label>
                         <input type="file" id="editImagemProduto" accept="image/*">
                     </div>
                     <button type="submit">Salvar Alterações</button>
@@ -208,8 +183,6 @@
         </div>
     </div>
 
-    <!-- <script src="main.js" defer></script> -->
-    <script type="module" src="./js/main.js"></script>
-    
+    <script type="module" src="main.js"></script>
 </body>
 </html>

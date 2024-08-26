@@ -3,7 +3,6 @@ import { isAdmin } from './auth.js';
 import { adicionarAoCarrinho, mesaAtual } from './mesa.js';
 import { openModal, showAlert, confirmAction } from './ui.js';
 
-
 let produtos = [];
 
 export function loadProdutos() {
@@ -142,74 +141,6 @@ function abrirModalEditarProduto(produto) {
 }
 
 function salvarProdutos() {
-    // In a real application, this would send the updated products to a server
-    // For this example, we'll just log to console
     console.log('Produtos atualizados:', produtos);
-    // You could also update localStorage if you want to persist changes
     localStorage.setItem('produtos', JSON.stringify(produtos));
-}
-
-export function filtrarProdutosPorNome(nome) {
-    return produtos.filter(produto => 
-        produto.nome.toLowerCase().includes(nome.toLowerCase())
-    );
-}
-
-export function filtrarProdutosPorCategoria(categoria) {
-    return produtos.filter(produto => produto.categoria === categoria);
-}
-
-export function ordenarProdutos(criterio) {
-    let produtosOrdenados = [...produtos];
-    switch(criterio) {
-        case 'nome':
-            produtosOrdenados.sort((a, b) => a.nome.localeCompare(b.nome));
-            break;
-        case 'preco':
-            produtosOrdenados.sort((a, b) => a.preco - b.preco);
-            break;
-        case 'categoria':
-            produtosOrdenados.sort((a, b) => a.categoria.localeCompare(b.categoria));
-            break;
-        default:
-            break;
-    }
-    return produtosOrdenados;
-}
-
-export function buscarProduto(termo) {
-    return produtos.filter(produto => 
-        produto.nome.toLowerCase().includes(termo.toLowerCase()) ||
-        produto.descricao.toLowerCase().includes(termo.toLowerCase()) ||
-        produto.categoria.toLowerCase().includes(termo.toLowerCase())
-    );
-}
-
-export function atualizarEstoqueProduto(id, novaQuantidade) {
-    const produto = getProdutoById(id);
-    if (produto) {
-        produto.estoque = novaQuantidade;
-        salvarProdutos();
-        showAlert(`Estoque do produto ${produto.nome} atualizado para ${novaQuantidade}.`);
-    } else {
-        showAlert('Produto não encontrado.');
-    }
-}
-
-export function obterCategoriasUnicas() {
-    return [...new Set(produtos.map(produto => produto.categoria))];
-}
-
-export function calcularValorTotalEstoque() {
-    return produtos.reduce((total, produto) => total + (produto.preco * (produto.estoque || 0)), 0);
-}
-
-export function obterProdutosMaisVendidos(limite = 5) {
-    // This would typically involve analyzing sales data
-    // For this example, we'll just return the first 'limite' products
-    return produtos.slice(0, limite);
-}
-
-export function verificarEstoqueBaixo(limiteMinimo = 10) {
-    return produtos.filter(produto => (produto.estoque || 0) < limiteMinimo);
 }
