@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PDV - Café Serenidade</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="css/main.css">
+</head>
+<body>
+    <header>
+        <div class="logo">
+            <h1>Café Serenidade</h1>
+        </div>
+        <nav>
+            <button class="nav-btn">Home</button>
+            <button class="nav-btn">Relatório</button>
+            <button class="nav-btn">Ajuda</button>
+        </nav>
+    </header>
+
+    <main>
+        <section id="mesas" class="section">
+            <h2>Mesas</h2>
+            <div class="search-bar">
+                <input type="text" id="searchInput" placeholder="Buscar mesa...">
+                <button id="searchBtn">Buscar</button>
+            </div>
+            <div id="mesasGrid"></div>
+        </section>
+
+        <section id="carrinho" class="section">
+            <h2>Carrinho</h2>
+            <div id="carrinhoItems"></div>
+            <div id="carrinhoTotal">
+                Total: <span id="totalValue">R$ 0.00</span>
+            </div>
+            <button id="adicionarProdutoBtn">Adicionar Produto</button>
+            <button id="finalizarPedidoBtn">Finalizar Pedido</button>
+        </section>
+    </main>
+
+    <div id="modal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2 id="modalTitle"></h2>
+            <div id="modalContent"></div>
+        </div>
+    </div>
+
+    <script type="module" src="./js/app.js"></script>
+    
+</body>
+</html>

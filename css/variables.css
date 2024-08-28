@@ -1,0 +1,30 @@
+:root {
+    --font-size: 16px;
+    --padding: 1rem;
+    --modal-width: 90vw;
+    --modal-height: 80vh;
+    --primary-color: #6C5CE7;
+    --secondary-color: #A29BFE;
+    --accent-color: #FFA502;
+    --background-color: #1E1E2E;
+    --text-color: #F8F8F2;
+    --card-bg-color: #2D2D3F;
+    --card-border-radius: 0.5rem;
+    --card-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    --card-transition: transform 0.3s ease;
+    --card-hover-transform: translateY(-5px);
+    --card-title-color: #F8F8F2;
+    --card-price-color: #FFA502;
+    --modal-bg-color: rgba(0, 0, 0, 0.8);
+    --modal-content-bg-color: #2D2D3F;
+    --close-btn-color: #F8F8F2;
+    --close-btn-hover-color: #FFA502;
+    --button-bg-color: #6C5CE7;
+    --button-hover-bg-color: #A29BFE;
+    --button-text-color: #F8F8F2;
+    --input-bg-color: #34344A;
+    --input-border-color: #A29BFE;
+    --input-text-color: #F8F8F2;
+    --table-border-color: #A29BFE;
+    --table-header-bg-color: #34344A;
+}

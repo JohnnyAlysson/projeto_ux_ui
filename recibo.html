@@ -1,58 +1,10 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-br">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Recibo - PDV Cafeteria</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            line-height: 1.6;
-            margin: 0;
-            padding: 20px;
-            background-color: #f4f4f4;
-        }
-        .container {
-            max-width: 600px;
-            margin: auto;
-            background: white;
-            padding: 20px;
-            border-radius: 5px;
-            box-shadow: 0 0 10px rgba(0,0,0,0.1);
-        }
-        h1 {
-            color: #333;
-            text-align: center;
-        }
-        button {
-            display: block;
-            width: 200px;
-            margin: 20px auto;
-            padding: 10px;
-            background-color: #007bff;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-        }
-        button:hover {
-            background-color: #0056b3;
-        }
-        #reciboContent {
-            margin-top: 20px;
-        }
-        .item-list {
-            list-style-type: none;
-            padding: 0;
-        }
-        .item-list li {
-            margin-bottom: 5px;
-        }
-        .total {
-            font-weight: bold;
-            margin-top: 10px;
-        }
-    </style>
+    <title>Recibo</title>
+    <link rel="stylesheet" href="css/main.css">
 </head>
 <body>
     <div class="container">
@@ -60,48 +12,66 @@
         <div id="reciboContent"></div>
         <button onclick="window.print()">Imprimir Recibo</button>
     </div>
-
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             const reciboContent = document.getElementById('reciboContent');
-            try {
-                const dadosRecibo = JSON.parse(localStorage.getItem('recibo'));
-                console.log('Dados do recibo:', dadosRecibo);
+            const recibo = JSON.parse(localStorage.getItem('recibo'));
 
-                if (dadosRecibo && typeof dadosRecibo === 'object') {
-                    let totalFormatted = typeof dadosRecibo.total === 'number' ? dadosRecibo.total.toFixed(2) : dadosRecibo.total;
+            if (recibo) {
+                let html = `
+                    <h2>Mesa ${recibo.numeroMesa}</h2>
+                    <p><strong>Método de Pagamento:</strong> ${recibo.metodoPagamento}</p>
+                    <p><strong>Observações:</strong> ${recibo.observacoes || 'Nenhuma'}</p>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Item</th>
+                                <th>Quantidade</th>
+                                <th>Preço Unitário</th>
+                                <th>Subtotal</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                `;
 
-                    reciboContent.innerHTML = `
-                        <h2>Mesa: ${dadosRecibo.numeroMesa}</h2>
-                        <p><strong>Método de Pagamento:</strong> ${dadosRecibo.metodoPagamento}</p>
-                        <p><strong>Observações:</strong> ${dadosRecibo.observacoes || 'Nenhuma'}</p>
-                        <h3>Itens:</h3>
-                        <ul class="item-list">
-                            ${dadosRecibo.carrinho.map(item => `
-                                <li>${item.nome} - Quantidade: ${item.quantidade} - R$ ${(item.preco * item.quantidade).toFixed(2)}</li>
-                            `).join('')}
-                        </ul>
-                        <p class="total">Total: R$ ${totalFormatted}</p>
-                        ${dadosRecibo.pagamentosParciais && dadosRecibo.pagamentosParciais.length > 0 ? `
-                            <h3>Pagamentos Parciais:</h3>
-                            <ul class="item-list">
-                                ${dadosRecibo.pagamentosParciais.map((pagamento, index) => `
-                                    <li>Pagamento ${index + 1}: R$ ${pagamento.toFixed(2)}</li>
-                                `).join('')}
-                            </ul>
-                        ` : ''}
-                        <p><strong>Total Abatido:</strong> R$ ${dadosRecibo.totalAbatido.toFixed(2)}</p>
+                recibo.carrinho.forEach(item => {
+                    html += `
+                        <tr>
+                            <td>${item.nome}</td>
+                            <td>${item.quantidade}</td>
+                            <td>R$ ${item.preco.toFixed(2)}</td>
+                            <td>R$ ${(item.preco * item.quantidade).toFixed(2)}</td>
+                        </tr>
                     `;
-                } else {
-                    reciboContent.innerHTML = '<p>Dados do recibo não encontrados ou inválidos.</p>';
-                }
-            } catch (error) {
-                console.error('Erro ao processar dados do recibo:', error);
-                reciboContent.innerHTML = '<p>Erro ao carregar o recibo. Por favor, tente novamente.</p>';
-            }
+                });
 
-            // Optionally, clear the localStorage after displaying the receipt
-            // localStorage.removeItem('recibo');
+                html += `
+                        </tbody>
+                    </table>
+                    <p><strong>Subtotal:</strong> R$ ${(recibo.total - recibo.servico).toFixed(2)}</p>
+                `;
+
+                if (recibo.servico > 0) {
+                    html += `<p><strong>Taxa de Serviço (10%):</strong> R$ ${recibo.servico.toFixed(2)}</p>`;
+                }
+
+                html += `
+                    <p><strong>Total:</strong> R$ ${recibo.total.toFixed(2)}</p>
+                    <p><strong>Total Abatido:</strong> R$ ${recibo.totalAbatido.toFixed(2)}</p>
+                    <p><strong>Total Pendente:</strong> R$ ${recibo.totalPendente.toFixed(2)}</p>
+                `;
+
+                if (recibo.pagamentosParciais.length > 0) {
+                    html += `<h3>Pagamentos Parciais:</h3>`;
+                    recibo.pagamentosParciais.forEach((pagamento, index) => {
+                        html += `<p>Pagamento ${index + 1}: R$ ${pagamento.toFixed(2)}</p>`;
+                    });
+                }
+
+                reciboContent.innerHTML = html;
+            } else {
+                reciboContent.innerHTML = '<p>Nenhum recibo disponível.</p>';
+            }
         });
     </script>
 </body>

@@ -1,0 +1,57 @@
+.card {
+  background-color: var(--card-bg-color);
+  padding: var(--padding);
+  box-shadow: var(--card-shadow);
+  border-radius: var(--card-border-radius);
+  transition: var(--card-transition);
+}
+
+.card:hover {
+  transform: var(--card-hover-transform);
+}
+
+.tabs-list button {
+  background-color: var(--secondary-color);
+  color: var(--text-color);
+  opacity: 0.7;
+  transition: opacity 0.3s ease;
+}
+
+.tabs-list button:hover,
+.tabs-list button:focus,
+.tabs-list button.active {
+  opacity: 1;
+  background-color: var(--primary-color);
+}
+
+.close-mesa-btn,
+.pagamento-parcial-btn {
+  display: inline-block;
+  margin-top: 1rem;
+  margin-right: 1rem;
+}
+
+#logoutBtn {
+  background-color: var(--accent-color);
+}
+
+#logoutBtn:hover,
+#logoutBtn:focus {
+  background-color: var(--card-price-color);
+}
+
+.form-group {
+  margin-bottom: 1rem;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 0.5rem;
+}
+
+#resumoPagamentoParcial {
+  margin-top: 1rem;
+  padding: 1rem;
+  background-color: var(--card-bg-color);
+  border-radius: var(--card-border-radius);
+}
