@@ -55,3 +55,23 @@
   background-color: var(--card-bg-color);
   border-radius: var(--card-border-radius);
 }
+
+.botoes-exportacao {
+  margin-top: 20px;
+  display: flex;
+  justify-content: space-around;
+}
+
+.botoes-exportacao button {
+  padding: 10px 20px;
+  background-color: #4CAF50;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.botoes-exportacao button:hover {
+  background-color: #45a049;
+}

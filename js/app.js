@@ -1,6 +1,6 @@
 import { produtos, getProdutosPorCategoria, getAllCategorias } from './products.js';
 import { renderSalesChart } from './sales-chart.js';
-
+import { adicionarBotoesExportacao, exportarRelatorioPDF, exportarRelatorioJSON } from './relatorio-export.js';
 
 document.addEventListener('DOMContentLoaded', () => {
     const mesasGrid = document.getElementById('mesasGrid');
@@ -149,7 +149,6 @@ document.addEventListener('DOMContentLoaded', () => {
             mesaAtual.pedidos.push({ ...produto, quantidade: 1 });
         }
         atualizarCarrinho();
-        // Removida a linha que fechava o modal
     }
 
     function mostrarModalPagamento() {
@@ -194,7 +193,6 @@ document.addEventListener('DOMContentLoaded', () => {
         const troco = valorPago - total;
         gerarRecibo(metodoPagamento, valorPago, troco);
         
-        // Adicionar venda ao relatório
         vendas.push({
             data: new Date(),
             mesa: mesaAtual.numero,
@@ -327,7 +325,6 @@ document.addEventListener('DOMContentLoaded', () => {
         modalTitle.textContent = 'Relatório de Vendas';
         
         const filtroHTML = `
-            <h3>Defina uma data para atualizar o gráfico abaixo</h3>
             <div class="filtro-relatorio">
                 <label for="dataInicio">Data Início:</label>
                 <input type="date" id="dataInicio">
@@ -380,6 +377,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function atualizarRelatorio(dataInicio = '', dataFim = '', formaPagamento = '', mesa = '') {
+        console.log('Iniciando atualização do relatório');
         let vendasFiltradas = vendas;
     
         if (dataInicio) {
@@ -407,34 +405,55 @@ document.addEventListener('DOMContentLoaded', () => {
         const produtosMaisVendidos = calcularProdutosMaisVendidos(vendasFiltradas);
     
         const relatorioContent = document.getElementById('relatorioContent');
-        relatorioContent.innerHTML = `
-            <h3>Total de Vendas: R$ ${totalVendas.toFixed(2)}</h3>
-            <h4>Vendas por Método de Pagamento:</h4>
-            <ul>
-                ${Object.entries(vendasPorMetodo).map(([metodo, total]) => `
-                    <li>${metodo}: R$ ${total.toFixed(2)}</li>
-                `).join('')}
-            </ul>
-            <h4>Produtos em Destaque:</h4>
-            <ul>
-                ${produtosMaisVendidos.map(produto => `
-                    <li>${produto.nome}: ${produto.quantidade} unidades</li>
-                `).join('')}
-            </ul>
-            <h4>Últimas Vendas:</h4>
-            <ul>
-                ${vendasFiltradas.slice(-5).map(venda => `
-                    <li>
-                        Mesa ${venda.mesa} - ${new Date(venda.data).toLocaleString()} - R$ ${venda.total.toFixed(2)}
-                    </li>
-                `).join('')}
-            </ul>
-        `;
+        if (relatorioContent) {
+            // Salva os botões de exportação existentes
+            const botoesExportacao = relatorioContent.querySelector('.botoes-exportacao');
+    
+            relatorioContent.innerHTML = `
+                <h3>Total de Vendas: R$ ${totalVendas.toFixed(2)}</h3>
+                <h4>Vendas por Método de Pagamento:</h4>
+                <ul>
+                    ${Object.entries(vendasPorMetodo).map(([metodo, total]) => `
+                        <li>${metodo}: R$ ${total.toFixed(2)}</li>
+                    `).join('')}
+                </ul>
+                <h4>Produtos em Destaque:</h4>
+                <ul>
+                    ${produtosMaisVendidos.map(produto => `
+                        <li>${produto.nome}: ${produto.quantidade} unidades</li>
+                    `).join('')}
+                </ul>
+                <h4>Últimas Vendas:</h4>
+                <ul>
+                    ${vendasFiltradas.slice(-5).map(venda => `
+                        <li>
+                            Mesa ${venda.mesa} - ${new Date(venda.data).toLocaleString()} - R$ ${venda.total.toFixed(2)}
+                        </li>
+                    `).join('')}
+                </ul>
+            `;
+    
+            // Reinsere os botões de exportação
+            if (botoesExportacao) {
+                relatorioContent.appendChild(botoesExportacao);
+            } else {
+                // Se os botões não existirem, cria novos
+                adicionarBotoesExportacao(vendas);
+            }
+        } else {
+            console.error('Elemento relatorioContent não encontrado');
+        }
     
         const graficoContainer = document.getElementById('graficoVendas');
-        graficoContainer.innerHTML = '';
-        const grafico = renderSalesChart(vendasFiltradas, dataInicio, dataFim);
-        graficoContainer.appendChild(grafico);
+        if (graficoContainer) {
+            graficoContainer.innerHTML = '';
+            const grafico = renderSalesChart(vendasFiltradas, dataInicio, dataFim);
+            graficoContainer.appendChild(grafico);
+        } else {
+            console.error('Elemento graficoVendas não encontrado');
+        }
+    
+        console.log('Relatório atualizado com sucesso');
     }
     
     function calcularProdutosMaisVendidos(vendasFiltradas) {
